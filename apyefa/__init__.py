@@ -1,19 +1,21 @@
-from .client import EfaClient
-from .data_classes import (
+from apyefa.client import EfaClient
+from apyefa.data_classes import (
     Departure,
-    Stop,
-    StopFilter,
-    StopType,
+    Location,
+    LocationFilter,
+    LocationType,
     SystemInfo,
+    Transportation,
     TransportType,
 )
 
 __all__ = [
-    "StopFilter",
-    "Stop",
-    "StopType",
+    "LocationFilter",
+    "Location",
+    "LocationType",
     "Departure",
     "SystemInfo",
+    "Transportation",
     "TransportType",
     "EfaClient",
 ]

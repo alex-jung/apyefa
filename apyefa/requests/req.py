@@ -3,8 +3,14 @@ from abc import abstractmethod
 
 from voluptuous import MultipleInvalid, Schema
 
-from apyefa.exceptions import EfaParameterError, EfaResponseInvalid
+from apyefa.exceptions import (
+    EfaFormatNotSupported,
+    EfaParameterError,
+    EfaResponseInvalid,
+)
 from apyefa.helpers import is_date, is_datetime, is_time
+
+from .parsers.rapid_json_parser import RapidJsonParser
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -14,7 +20,7 @@ class Request:
         self._name: str = name
         self._macro: str = macro
         self._parameters: dict[str, str] = {}
-        self._schema: Schema = self._get_params_schema()
+        self._format: str = output_format
 
         self.add_param("outputFormat", output_format)
 
@@ -70,21 +76,13 @@ class Request:
         Raises:
             EfaParameterError: Validation of some parameter(s) failed
         """
+        params_schema = self._get_params_schema()
+
         try:
-            return self._schema(params)
+            return params_schema(self._parameters)
         except MultipleInvalid as exc:
             _LOGGER.error("Parameters validation failed", exc_info=exc)
             raise EfaParameterError(str(exc)) from exc
-
-    def _validate_response(self, response: dict) -> None:
-        val_schema = self._get_response_schema()
-
-        try:
-            val_schema(response)
-        except MultipleInvalid as exc:
-            raise EfaResponseInvalid(
-                f"Server response validataion failed - {str(exc)}"
-            ) from None
 
     def _params_str(self) -> str:
         """Return parameters concatenated with &
@@ -106,5 +104,9 @@ class Request:
         raise NotImplementedError("Abstract method not implemented")
 
     @abstractmethod
-    def _get_response_schema(self) -> Schema:
-        raise NotImplementedError("Abstract method not implemented")
+    def _get_parser(self):
+        match self._format:
+            case "rapidJSON":
+                return RapidJsonParser()
+            case _:
+                raise EfaFormatNotSupported(f"Format {self._format} does not supported")

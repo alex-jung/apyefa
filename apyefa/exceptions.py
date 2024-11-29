@@ -12,3 +12,7 @@ class EfaParseError(AttributeError):
 
 class EfaResponseInvalid(ValueError):
     pass
+
+
+class EfaFormatNotSupported(Exception):
+    pass

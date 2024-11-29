@@ -1,11 +1,16 @@
-import json
 import logging
 from enum import StrEnum
-from pprint import pprint
 
 import aiohttp
 
-from apyefa.data_classes import Stop, StopFilter, SystemInfo
+from apyefa.data_classes import (
+    Departure,
+    Location,
+    LocationFilter,
+    LocationType,
+    SystemInfo,
+    Transportation,
+)
 from apyefa.exceptions import EfaConnectionError
 from apyefa.requests import (
     DeparturesRequest,
@@ -13,8 +18,7 @@ from apyefa.requests import (
     StopFinderRequest,
     SystemInfoRequest,
 )
-
-from .requests.req_serving_lines import ServingLinesRequest
+from apyefa.requests.req_serving_lines import ServingLinesRequest
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,21 +70,21 @@ class EfaClient:
 
         return request.parse(response)
 
-    async def stops(
-        self, name: str, type="any", filters: list[StopFilter] = []
-    ) -> list[Stop]:
-        """Find stop(s) by provided `name` (coordinates or stop name).
+    async def locations(
+        self, name: str, type="any", filters: list[LocationFilter] = []
+    ) -> list[Location]:
+        """Find location(s) by provided `name` (coordinates or stop name).
 
         Args:
-            name (str): Name or ID of stop to search (case insensitive)
+            name (str): Name or ID of location to search (case insensitive)
             e.g. "Plärrer", "Nordostbanhof" or "de:09564:704"
             type (str, optional): ['any', 'coord']. Defaults to "any".
-            filters (list[StopFilter]): List of filters to apply for search. Defaults to empty.
+            filters (list[LocationFilter]): List of filters to apply for search. Defaults to empty.
 
         Returns:
-            list[Stop]: List of station(s) provided by endpoint. List is sorted by match quality.
+            list[Location]: List of location(s) returned by endpoint. List is sorted by match quality.
         """
-        _LOGGER.info(f"Request stop search by name/id/coord {name}")
+        _LOGGER.info(f"Request location search by name/id/coord {name}")
         _LOGGER.debug(f"type: {type}")
         _LOGGER.debug(f"filters: {filters}")
 
@@ -95,20 +99,23 @@ class EfaClient:
 
         return request.parse(response)
 
+    async def location_by_coord(self) -> Location:
+        pass
+
     async def trip(self):
         raise NotImplementedError
 
     async def departures(
         self,
-        stop: Stop | str,
+        stop: Location | str,
         limit=40,
         date: str | None = None,
-    ):
+    ) -> list[Departure]:
         _LOGGER.info(f"Request departures for stop {stop}")
         _LOGGER.debug(f"limit: {limit}")
         _LOGGER.debug(f"date: {date}")
 
-        if isinstance(stop, Stop):
+        if isinstance(stop, Location):
             stop = stop.id
 
         request = DeparturesRequest(stop)
@@ -121,33 +128,49 @@ class EfaClient:
 
         return request.parse(response)
 
-    async def serving_lines(self):
-        _LOGGER.info("Request serving lines")
+    async def lines_by_name(self, line: str) -> list[Transportation]:
+        _LOGGER.info("Request serving lines by name")
+        _LOGGER.debug(f"line:{line}")
 
-        request = ServingLinesRequest("odv")
-
-        # add parameters
-        # request.add_param("lineName", "U2")
-        request.add_param("type_sl", "stopID")
-        request.add_param("name_sl", "de:09562:3857")
+        request = ServingLinesRequest("line", line)
 
         response = await self._run_query(self._build_url(request))
 
         return request.parse(response)
 
-    async def _run_query(self, query: str) -> dict:
+    async def lines_by_location(self, location: str | Location) -> list[Transportation]:
+        _LOGGER.info("Request lines by location")
+        _LOGGER.debug(f"location:{location}")
+
+        if isinstance(location, Location):
+            if location.loc_type != LocationType.STOP:
+                raise ValueError(
+                    f"Only location with type Stop are supported, but provided {location.loc_type}"
+                )
+            location = location.id
+
+        request = ServingLinesRequest("odv", location)
+
+        response = await self._run_query(self._build_url(request))
+
+        return request.parse(response)
+
+    async def line_stops(self, line: str | Transportation) -> list[Location]:
+        pass
+
+    async def _run_query(self, query: str) -> str:
         _LOGGER.info(f"Run query {query}")
 
         async with self._client_session.get(query) as response:
             _LOGGER.debug(f"Response status: {response.status}")
 
             if response.status == 200:
-                response_json = json.loads(await response.text())
+                text = await response.text()
 
                 if self._debug:
-                    pprint(response_json)
+                    _LOGGER.debug(text)
 
-                return response_json
+                return text
             else:
                 raise EfaConnectionError(
                     f"Failed to fetch data from endpoint. Returned {response.status}"
