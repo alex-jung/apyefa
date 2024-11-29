@@ -1,0 +1,60 @@
+[build-system]
+requires = [
+    "wheel",
+    "setuptools-scm[toml]>=8.0",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apyefa"
+version = "0.0.3"
+requires-python = ">= 3.11"
+description = "Python API for EFA(Elektronische Fahrplanauskunft) async requests"
+authors = [
+  {name = "Alex Jung", email = "jungdevelop@gmail.com"}
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["efa", "vgn", "gtfs", "public transport", "traffic"]
+
+dependencies = [
+    "aiohttp==3.11.7",
+    "voluptuous==0.15.2",
+    "tzdata==2024.2"
+]
+
+[project.optional-dependencies]
+tests = [
+  'coverage>=5.0.3',
+  'pytest-cov',
+  'pytest',
+  'pytest-benchmark[histogram]>=3.2.1'
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests"
+]
+
+[tool.coverage.report]
+exclude_also = [
+    "_LOGGER.",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+    ]
+
+[project.urls]
+Homepage = "https://github.com/alex-jung/apyefa"
+Documentation = "https://github.com/alex-jung/apyefa"
+Repository = "https://github.com/alex-jung/apyefa"
+Issues = "https://github.com/alex-jung/apyefa/issues"
