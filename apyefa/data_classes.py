@@ -181,7 +181,7 @@ SCHEMA_DEPARTURE: Final = vol.Schema(
 
 
 @dataclass(frozen=True)
-class Base:
+class _Base:
     raw_data: dict = field(repr=False)
 
     @classmethod
@@ -195,7 +195,7 @@ class Base:
 
 # Data classes
 @dataclass(frozen=True)
-class SystemInfo(Base):
+class SystemInfo(_Base):
     version: str
     app_version: str
     data_format: str
@@ -227,7 +227,7 @@ class SystemInfo(Base):
 
 
 @dataclass(frozen=True)
-class Location(Base):
+class Location(_Base):
     name: str
     loc_type: LocationType
     id: str = ""
@@ -279,7 +279,7 @@ class Location(Base):
 
 
 @dataclass(frozen=True)
-class Departure(Base):
+class Departure(_Base):
     location: Location = field(repr=False)
     line_name: str
     route: str
@@ -330,7 +330,7 @@ class Departure(Base):
 
 
 @dataclass(frozen=True)
-class Transportation(Base):
+class Transportation(_Base):
     id: str
     name: str
     description: str

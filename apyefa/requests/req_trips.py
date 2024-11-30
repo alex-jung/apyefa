@@ -28,6 +28,3 @@ class TripRequest(Request):
                 Optional("useRealtime"): Any("0", "1", 0, 1),
             }
         )
-
-    def _get_response_schema(self) -> Schema:
-        raise NotImplementedError("Abstract method not implemented")

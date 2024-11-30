@@ -6,7 +6,6 @@ from voluptuous import MultipleInvalid, Schema
 from apyefa.exceptions import (
     EfaFormatNotSupported,
     EfaParameterError,
-    EfaResponseInvalid,
 )
 from apyefa.helpers import is_date, is_datetime, is_time
 
