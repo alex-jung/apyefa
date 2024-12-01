@@ -1,7 +1,6 @@
 from typing import Final
 
 import pytest
-import requests
 
 from apyefa.commands.command_departures import CommandDepartures
 from apyefa.exceptions import EfaParameterError
