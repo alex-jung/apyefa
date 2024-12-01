@@ -8,19 +8,12 @@ from apyefa.exceptions import EfaParameterError
 
 NAME: Final = "XML_DM_REQUEST"
 MACRO: Final = "dm"
-
 STOP_ID_PLAERRER: Final = "de:09564:704"
-DEPARTURES_QUERY: Final = (
-    f"https://efa.vgn.de/vgnExt_oeffi/XML_DM_REQUEST?commonMacro=dm&outputFormat=rapidJSON&name_dm={STOP_ID_PLAERRER}&itdTime=2216&itdDate=20241110&mode=direct&type_dm=stop"
-)
 
 
-@pytest.fixture
-def query_string():
-    r = requests.get(DEPARTURES_QUERY)
-    assert r.status_code == 200
-
-    return r.text
+@pytest.fixture(scope="module")
+def query_url():
+    return f"https://efa.vgn.de/vgnExt_oeffi/{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&name_dm={STOP_ID_PLAERRER}&itdTime=2216&itdDate=20241110&mode=direct&type_dm=stop"
 
 
 @pytest.fixture
@@ -42,10 +35,10 @@ def test_init_params(command):
     assert command._parameters == expected_params
 
 
-def test_parse_success(command, query_string):
-    info = command.parse(query_string)
+def test_parse_success(command, run_query):
+    departures = command.parse(run_query)
 
-    assert len(info) > 0
+    assert len(departures) > 0
 
 
 @pytest.mark.parametrize("data", [True, 123])
