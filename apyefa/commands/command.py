@@ -50,30 +50,39 @@ class Command:
             raise ValueError("Date(time) provided in invalid format")
 
     def to_str(self) -> str:
-        self._validate_and_extend()
+        self._parameters = self.extend_with_defaults()
+        self.validate()
 
         return f"{self._name}?commonMacro={self._macro}" + self._get_params_as_str()
 
     def __str__(self) -> str:
         return self.to_str()
 
-    def _validate_and_extend(self):
-        """Validate parameters stored for this command. This step will extend parameters with default values
-        as well.
-
-        Returns:
-            str: Validated and extended with default values parameters dict
+    def validate(self):
+        """Validate self._parameters
 
         Raises:
-            EfaParameterError: Validation of some parameter(s) failed
+            EfaParameterError: some of parameters are missing or have invalid values
         """
         params_schema = self._get_params_schema()
 
         try:
-            self._parameters = params_schema(self._parameters)
+            params = self.extend_with_defaults()
+            params_schema(params)
         except MultipleInvalid as exc:
             _LOGGER.error("Parameters validation failed", exc_info=exc)
             raise EfaParameterError(str(exc)) from exc
+
+    def extend_with_defaults(self) -> dict:
+        """Extend self._parameters with default values
+
+        Returns:
+            dict: parameters extended with default values
+        """
+
+        params_schema = self._get_params_schema()
+
+        return params_schema(self._parameters)
 
     def _get_params_as_str(self) -> str:
         """Return parameters concatenated with &

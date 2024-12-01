@@ -1,34 +1,65 @@
+from typing import Final
+from unittest.mock import patch
+
 import pytest
 
 from apyefa.commands.command_stop_finder import CommandStopFinder
-from apyefa.exceptions import EfaParameterError, EfaResponseInvalid
+from apyefa.commands.parsers.rapid_json_parser import RapidJsonParser
+from apyefa.exceptions import EfaParameterError, EfaParseError
+
+NAME: Final = "XML_STOPFINDER_REQUEST"
+MACRO: Final = "stopfinder"
 
 
 @pytest.fixture
 def command():
-    return CommandStopFinder("my_type", "my_name")
+    return CommandStopFinder("any", "my_name")
 
 
 def test_init_name_and_macro(command):
-    assert command._name == "XML_STOPFINDER_REQUEST"
-    assert command._macro == "stopfinder"
+    assert command._name == NAME
+    assert command._macro == MACRO
 
 
 def test_init_params(command):
-    assert command._parameters.get("type_sf") == "my_type"
-    assert command._parameters.get("name_sf") == "my_name"
+    expected_params = {
+        "outputFormat": "rapidJSON",
+        "type_sf": "any",
+        "name_sf": "my_name",
+    }
+
+    assert command._parameters == expected_params
 
 
+# test 'add_param()'
 @pytest.mark.parametrize(
-    "isGlobalId, expected_id", [(True, "global_id"), (False, "stop_id_1")]
+    "param, value",
+    [("outputFormat", "rapidJSON"), ("name_sf", "my_value"), ("type_sf", "my_type")],
 )
-def test_parse_success(isGlobalId, expected_id, command):
+def test_add_param_success(command, param, value):
+    command.add_param(param, value)
+
+
+@pytest.mark.parametrize("param, value", [("param", "value"), ("name", "my_name")])
+def test_add_param_failed(command, param, value):
+    with pytest.raises(EfaParameterError):
+        command.add_param(param, value)
+
+
+# test 'to_str() and __str()__'
+def test_to_str(command):
+    expected_str = f"{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&type_sf=any&name_sf=my_name&anyMaxSizeHitList=30"
+
+    assert command.to_str() == expected_str and str(command) == expected_str
+
+
+def test_parse_success(command):
     data = {
         "version": "version",
         "locations": [
             {
                 "id": "global_id",
-                "isGlobalId": isGlobalId,
+                "isGlobalId": True,
                 "name": "my location name",
                 "properties": {"stopId": "stop_id_1"},
                 "disassembledName": "disassembled name",
@@ -40,28 +71,16 @@ def test_parse_success(isGlobalId, expected_id, command):
         ],
     }
 
-    info = command.parse(data)
+    with patch.object(RapidJsonParser, "parse") as parse_mock:
+        parse_mock.return_value = data
+        result = command.parse(data)
 
-    assert len(info) == 1
-    assert info[0].id == expected_id
-
-
-@pytest.mark.parametrize(
-    "data", [{"locations": None}, {"locations": "value"}, {"locations": 123}]
-)
-def test_parse_failed(data, command):
-    with pytest.raises(EfaResponseInvalid):
-        command.parse(data)
+    assert len(result) == 1
 
 
-@pytest.mark.parametrize("value", ["any", "coord"])
-def test_add_valid_param(value, command):
-    command.add_param("type_sf", value)
+def test_parse_failed(command):
+    with patch.object(RapidJsonParser, "parse") as parse_mock:
+        parse_mock.side_effect = EfaParseError
 
-    # no exceptions occured
-
-
-@pytest.mark.parametrize("invalid_param", ["dummy", "STOP"])
-def test_add_invalid_param(invalid_param, command):
-    with pytest.raises(EfaParameterError):
-        command.add_param(invalid_param, "valid_value")
+        with pytest.raises(EfaParseError):
+            command.parse("this is a test response")

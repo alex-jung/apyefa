@@ -1,8 +1,26 @@
+from typing import Final
+
 import pytest
 import requests
 
 from apyefa.commands.command_departures import CommandDepartures
 from apyefa.exceptions import EfaParameterError
+
+NAME: Final = "XML_DM_REQUEST"
+MACRO: Final = "dm"
+
+STOP_ID_PLAERRER: Final = "de:09564:704"
+DEPARTURES_QUERY: Final = (
+    f"https://efa.vgn.de/vgnExt_oeffi/XML_DM_REQUEST?commonMacro=dm&outputFormat=rapidJSON&name_dm={STOP_ID_PLAERRER}&itdTime=2216&itdDate=20241110&mode=direct&type_dm=stop"
+)
+
+
+@pytest.fixture
+def query_string():
+    r = requests.get(DEPARTURES_QUERY)
+    assert r.status_code == 200
+
+    return r.text
 
 
 @pytest.fixture
@@ -10,28 +28,22 @@ def command():
     return CommandDepartures("my_stop")
 
 
-def run_departures_query():
-    r = requests.get(
-        "https://efa.vgn.de/vgnExt_oeffi/XML_DM_REQUEST?commonMacro=dm&outputFormat=rapidJSON&name_dm=de:09564:704&limit=3&itdTime=2216&itdDate=20241110&mode=direct&type_dm=stop&useRealtime=1"
-    )
-    assert r.status_code == 200
-
-    return r.text
-
-
 def test_init_name_and_macro(command):
-    assert command._name == "XML_DM_REQUEST"
-    assert command._macro == "dm"
+    assert command._name == NAME
+    assert command._macro == MACRO
 
 
 def test_init_params(command):
-    assert command._parameters.get("name_dm") == "my_stop"
+    expected_params = {
+        "outputFormat": "rapidJSON",
+        "name_dm": "my_stop",
+    }
+
+    assert command._parameters == expected_params
 
 
-def test_parse_success(command):
-    response = run_departures_query()
-
-    info = command.parse(response)
+def test_parse_success(command, query_string):
+    info = command.parse(query_string)
 
     assert len(info) > 0
 

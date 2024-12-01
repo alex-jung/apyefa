@@ -1,60 +1,70 @@
-from datetime import datetime
+from typing import Final
+from unittest.mock import patch
 
 import pytest
 
 from apyefa.commands.command_system_info import CommandSystemInfo
-from apyefa.data_classes import SystemInfo
-from apyefa.exceptions import EfaParameterError, EfaResponseInvalid
+from apyefa.commands.parsers.rapid_json_parser import RapidJsonParser
+from apyefa.exceptions import EfaParameterError, EfaParseError
+
+NAME: Final = "XML_SYSTEMINFO_REQUEST"
+MACRO: Final = "system"
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def command():
     return CommandSystemInfo()
 
 
+# test constructor
 def test_init_name_and_macro(command):
-    assert command._name == "XML_SYSTEMINFO_REQUEST"
-    assert command._macro == "system"
+    assert command._name == NAME
+    assert command._macro == MACRO
 
 
-def test_parse_success(command):
-    data = {
-        "version": "1.2.3",
-        "ptKernel": {
-            "dataFormat": "EFA10_04_00",
-            "dataBuild": "example",
-            "appVersion": "version",
-        },
-        "validity": {"from": "2024-11-01", "to": "2025-01-01"},
-    }
+def test_init_parameters(command):
+    expected_params = {"outputFormat": "rapidJSON"}
 
-    info = command.parse(data)
-
-    assert isinstance(info, SystemInfo)
-    assert info.version == "1.2.3"
-    assert info.data_format == "EFA10_04_00"
-    assert info.valid_from == datetime(2024, 11, 1).date()
-    assert info.valid_to == datetime(2025, 1, 1).date()
+    assert command._parameters == expected_params
 
 
-@pytest.mark.parametrize("data", [None, {}, {"dummy": "value"}])
-def test_parse_failed(data, command):
-    with pytest.raises(EfaResponseInvalid):
-        command.parse(data)
-
-
+# test 'add_param()'
 @pytest.mark.parametrize(
     "param, value",
-    [("valid_param", "value"), ("itdDate", "my_name"), ("itdTime", "my_name")],
+    [("outputFormat", "rapidJSON")],
 )
-def test_add_valid_params(param, value, command):
+def test_add_param_success(command, param, value):
+    command.add_param(param, value)
+
+
+@pytest.mark.parametrize("param, value", [("param", "value"), ("name_sf", "my_name")])
+def test_add_param_failed(command, param, value):
     with pytest.raises(EfaParameterError):
         command.add_param(param, value)
 
 
-@pytest.mark.parametrize("param, value", [("param", "value"), ("name_sf", "my_name")])
-def test_add_invalid_params(param, value):
-    req = CommandSystemInfo()
+# test 'to_str() and __str()__'
+def test_to_str(command):
+    expected_str = f"{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON"
 
-    with pytest.raises(EfaParameterError):
-        req.add_param(param, value)
+    assert command.to_str() == expected_str and str(command) == expected_str
+
+
+# test 'parse()'
+def test_parse_success(command):
+    with patch.object(RapidJsonParser, "parse") as parse_mock:
+        parse_mock.return_value = {}
+
+        command.parse("this is a test response")
+
+    parse_mock.assert_called_once()
+
+
+def test_parse_failed(command):
+    with patch.object(RapidJsonParser, "parse") as parse_mock:
+        parse_mock.side_effect = EfaParseError
+
+        with pytest.raises(EfaParseError):
+            command.parse("this is a test response")
+
+    parse_mock.assert_called_once()

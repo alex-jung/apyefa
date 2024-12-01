@@ -55,7 +55,7 @@ def test_command_validation_failed(mock_command):
     }
 
     with pytest.raises(EfaParameterError):
-        str(mock_command)
+        mock_command.validate()
 
 
 @pytest.mark.parametrize(
