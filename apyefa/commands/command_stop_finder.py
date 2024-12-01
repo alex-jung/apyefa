@@ -2,16 +2,13 @@ import logging
 
 from voluptuous import Any, Optional, Range, Required, Schema
 
-from apyefa.data_classes import (
-    Location,
-    LocationFilter,
-)
-from apyefa.requests.req import Request
+from apyefa.commands.command import Command
+from apyefa.data_classes import Location, LocationFilter
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class StopFinderRequest(Request):
+class CommandStopFinder(Command):
     def __init__(self, req_type: str, name: str) -> None:
         super().__init__("XML_STOPFINDER_REQUEST", "stopfinder")
 

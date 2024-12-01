@@ -2,13 +2,13 @@ import logging
 
 from voluptuous import Any, Date, Datetime, Optional, Required, Schema
 
+from apyefa.commands.command import Command
 from apyefa.data_classes import Departure
-from apyefa.requests.req import Request
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class DeparturesRequest(Request):
+class CommandDepartures(Command):
     def __init__(self, stop: str) -> None:
         super().__init__("XML_DM_REQUEST", "dm")
 

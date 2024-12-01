@@ -1,6 +1,6 @@
 import json
 
-from apyefa.requests.parsers.parser import Parser
+from apyefa.commands.parsers.parser import Parser
 
 
 class RapidJsonParser(Parser):

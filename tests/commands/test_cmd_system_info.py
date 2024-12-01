@@ -2,21 +2,22 @@ from datetime import datetime
 
 import pytest
 
+from apyefa.commands.command_system_info import CommandSystemInfo
 from apyefa.data_classes import SystemInfo
 from apyefa.exceptions import EfaParameterError, EfaResponseInvalid
-from apyefa.requests.req_system_info import SystemInfoRequest
 
 
-def test_init_name_and_macro():
-    req = SystemInfoRequest()
-
-    assert req._name == "XML_SYSTEMINFO_REQUEST"
-    assert req._macro == "system"
+@pytest.fixture
+def command():
+    return CommandSystemInfo()
 
 
-def test_parse_success():
-    req = SystemInfoRequest()
+def test_init_name_and_macro(command):
+    assert command._name == "XML_SYSTEMINFO_REQUEST"
+    assert command._macro == "system"
 
+
+def test_parse_success(command):
     data = {
         "version": "1.2.3",
         "ptKernel": {
@@ -27,7 +28,7 @@ def test_parse_success():
         "validity": {"from": "2024-11-01", "to": "2025-01-01"},
     }
 
-    info = req.parse(data)
+    info = command.parse(data)
 
     assert isinstance(info, SystemInfo)
     assert info.version == "1.2.3"
@@ -37,27 +38,23 @@ def test_parse_success():
 
 
 @pytest.mark.parametrize("data", [None, {}, {"dummy": "value"}])
-def test_parse_failed(data):
-    req = SystemInfoRequest()
-
+def test_parse_failed(data, command):
     with pytest.raises(EfaResponseInvalid):
-        req.parse(data)
+        command.parse(data)
 
 
 @pytest.mark.parametrize(
     "param, value",
     [("valid_param", "value"), ("itdDate", "my_name"), ("itdTime", "my_name")],
 )
-def test_add_valid_params(param, value):
-    req = SystemInfoRequest()
-
+def test_add_valid_params(param, value, command):
     with pytest.raises(EfaParameterError):
-        req.add_param(param, value)
+        command.add_param(param, value)
 
 
 @pytest.mark.parametrize("param, value", [("param", "value"), ("name_sf", "my_name")])
 def test_add_invalid_params(param, value):
-    req = SystemInfoRequest()
+    req = CommandSystemInfo()
 
     with pytest.raises(EfaParameterError):
         req.add_param(param, value)

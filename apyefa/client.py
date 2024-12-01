@@ -2,6 +2,13 @@ import logging
 
 import aiohttp
 
+from apyefa.commands import (
+    Command,
+    CommandDepartures,
+    CommandServingLines,
+    CommandStopFinder,
+    CommandSystemInfo,
+)
 from apyefa.data_classes import (
     Departure,
     Location,
@@ -11,13 +18,6 @@ from apyefa.data_classes import (
     Transportation,
 )
 from apyefa.exceptions import EfaConnectionError
-from apyefa.requests import (
-    DeparturesRequest,
-    Request,
-    ServingLinesRequest,
-    StopFinderRequest,
-    SystemInfoRequest,
-)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,10 +53,10 @@ class EfaClient:
         """
         _LOGGER.info("Request system info")
 
-        request = SystemInfoRequest()
-        response = await self._run_query(self._build_url(request))
+        command = CommandSystemInfo()
+        response = await self._run_query(self._build_url(command))
 
-        return request.parse(response)
+        return command.parse(response)
 
     async def locations_by_name(
         self, name: str, type="any", filters: list[LocationFilter] = []
@@ -76,16 +76,16 @@ class EfaClient:
         _LOGGER.debug(f"type: {type}")
         _LOGGER.debug(f"filters: {filters}")
 
-        request = StopFinderRequest(type, name)
+        command = CommandStopFinder(type, name)
 
         if filters:
-            request.add_param("anyObjFilter_sf", sum(filters))
+            command.add_param("anyObjFilter_sf", sum(filters))
 
         # ToDo: add possibility for search by coordinates
 
-        response = await self._run_query(self._build_url(request))
+        response = await self._run_query(self._build_url(command))
 
-        return request.parse(response)
+        return command.parse(response)
 
     async def location_by_coord(self) -> Location:
         pass
@@ -106,25 +106,25 @@ class EfaClient:
         if isinstance(stop, Location):
             stop = stop.id
 
-        request = DeparturesRequest(stop)
+        command = CommandDepartures(stop)
 
         # add parameters
-        request.add_param("limit", limit)
-        request.add_param_datetime(date)
+        command.add_param("limit", limit)
+        command.add_param_datetime(date)
 
-        response = await self._run_query(self._build_url(request))
+        response = await self._run_query(self._build_url(command))
 
-        return request.parse(response)
+        return command.parse(response)
 
     async def transportations_by_name(self, line: str) -> list[Transportation]:
         _LOGGER.info("Request serving lines by name")
         _LOGGER.debug(f"line:{line}")
 
-        request = ServingLinesRequest("line", line)
+        command = CommandServingLines("line", line)
 
-        response = await self._run_query(self._build_url(request))
+        response = await self._run_query(self._build_url(command))
 
-        return request.parse(response)
+        return command.parse(response)
 
     async def transportations_by_location(
         self, location: str | Location
@@ -139,11 +139,11 @@ class EfaClient:
                 )
             location = location.id
 
-        request = ServingLinesRequest("odv", location)
+        command = CommandServingLines("odv", location)
 
-        response = await self._run_query(self._build_url(request))
+        response = await self._run_query(self._build_url(command))
 
-        return request.parse(response)
+        return command.parse(response)
 
     async def locations_by_transportation(
         self, line: str | Transportation
@@ -153,7 +153,7 @@ class EfaClient:
     async def _run_query(self, query: str) -> str:
         _LOGGER.info(f"Run query {query}")
 
-        async with self._client_session.get(query) as response:
+        async with self._client_session.get(query, ssl=False) as response:
             _LOGGER.debug(f"Response status: {response.status}")
 
             if response.status == 200:
@@ -165,8 +165,8 @@ class EfaClient:
                 return text
             else:
                 raise EfaConnectionError(
-                    f"Failed to fetch data from endpoint. Returned {response.status}"
+                    f"Failed to fetch data from endpoint. Returned status: {response.status}"
                 )
 
-    def _build_url(self, request: Request):
-        return self._base_url + str(request)
+    def _build_url(self, cmd: Command):
+        return self._base_url + str(cmd)

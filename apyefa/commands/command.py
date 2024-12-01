@@ -3,18 +3,14 @@ from abc import abstractmethod
 
 from voluptuous import MultipleInvalid, Schema
 
-from apyefa.exceptions import (
-    EfaFormatNotSupported,
-    EfaParameterError,
-)
+from apyefa.commands.parsers.rapid_json_parser import RapidJsonParser
+from apyefa.exceptions import EfaFormatNotSupported, EfaParameterError
 from apyefa.helpers import is_date, is_datetime, is_time
-
-from .parsers.rapid_json_parser import RapidJsonParser
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class Request:
+class Command:
     def __init__(self, name: str, macro: str, output_format: str = "rapidJSON") -> None:
         self._name: str = name
         self._macro: str = macro
@@ -29,7 +25,7 @@ class Request:
 
         if param not in self._get_params_schema().schema.keys():
             raise EfaParameterError(
-                f"Parameter {param} is now allowed for this request"
+                f"Parameter {param} is now allowed for this command"
             )
 
         _LOGGER.debug(f'Add parameter "{param}" with value "{value}"')
@@ -53,24 +49,20 @@ class Request:
         else:
             raise ValueError("Date(time) provided in invalid format")
 
+    def to_str(self) -> str:
+        self._validate_and_extend()
+
+        return f"{self._name}?commonMacro={self._macro}" + self._get_params_as_str()
+
     def __str__(self) -> str:
-        """Validate parameters schema and return parameters as string\n
-        for URL parametrization
+        return self.to_str()
 
-        Returns:
-            str: parameters as string ready to use in URL
-        """
-
-        self._parameters = self._validate_params(self._parameters)
-
-        return f"{self._name}?commonMacro={self._macro}" + self._params_str()
-
-    def _validate_params(self, params: dict) -> dict:
-        """Validate parameters stored for request. This step will extend parameters with default values
+    def _validate_and_extend(self):
+        """Validate parameters stored for this command. This step will extend parameters with default values
         as well.
 
         Returns:
-            str: Validated and extended with default value parameters dict
+            str: Validated and extended with default values parameters dict
 
         Raises:
             EfaParameterError: Validation of some parameter(s) failed
@@ -78,12 +70,12 @@ class Request:
         params_schema = self._get_params_schema()
 
         try:
-            return params_schema(self._parameters)
+            self._parameters = params_schema(self._parameters)
         except MultipleInvalid as exc:
             _LOGGER.error("Parameters validation failed", exc_info=exc)
             raise EfaParameterError(str(exc)) from exc
 
-    def _params_str(self) -> str:
+    def _get_params_as_str(self) -> str:
         """Return parameters concatenated with &
 
         Returns:
@@ -108,4 +100,6 @@ class Request:
             case "rapidJSON":
                 return RapidJsonParser()
             case _:
-                raise EfaFormatNotSupported(f"Format {self._format} does not supported")
+                raise EfaFormatNotSupported(
+                    f"Output format {self._format} is not supported"
+                )

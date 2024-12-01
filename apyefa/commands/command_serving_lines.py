@@ -2,13 +2,13 @@ import logging
 
 from voluptuous import Any, Optional, Required, Schema
 
+from apyefa.commands.command import Command
 from apyefa.data_classes import Transportation
-from apyefa.requests.req import Request
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class ServingLinesRequest(Request):
+class CommandServingLines(Command):
     def __init__(self, mode: str, value: str) -> None:
         super().__init__("XML_SERVINGLINES_REQUEST", "servingLines")
 

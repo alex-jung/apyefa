@@ -2,12 +2,12 @@ import logging
 
 from voluptuous import Any, Optional, Required, Schema
 
-from apyefa.requests.req import Request
+from apyefa.commands.command import Command
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class TripRequest(Request):
+class CommandTrip(Command):
     def __init__(self) -> None:
         super().__init__("XML_TRIP_REQUEST2", "trip")
 
