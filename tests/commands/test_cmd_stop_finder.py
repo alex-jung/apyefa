@@ -49,25 +49,19 @@ def test_parse_success(isGlobalId, expected_id, command):
 @pytest.mark.parametrize(
     "data", [{"locations": None}, {"locations": "value"}, {"locations": 123}]
 )
-def test_parse_failed(data):
-    req = StopFinderRequest("my_type", "my_name")
-
+def test_parse_failed(data, command):
     with pytest.raises(EfaResponseInvalid):
-        req.parse(data)
+        command.parse(data)
 
 
 @pytest.mark.parametrize("value", ["any", "coord"])
-def test_add_valid_param(value):
-    req = StopFinderRequest("my_type", "my_name")
-
-    req.add_param("type_sf", value)
+def test_add_valid_param(value, command):
+    command.add_param("type_sf", value)
 
     # no exceptions occured
 
 
 @pytest.mark.parametrize("invalid_param", ["dummy", "STOP"])
-def test_add_invalid_param(invalid_param):
-    req = StopFinderRequest("my_type", "my_name")
-
+def test_add_invalid_param(invalid_param, command):
     with pytest.raises(EfaParameterError):
-        req.add_param(invalid_param, "valid_value")
+        command.add_param(invalid_param, "valid_value")
