@@ -11,7 +11,7 @@ MACRO: Final = "servingLines"
 
 @pytest.fixture(scope="module")
 def query_url():
-    return f"https://efa.vgn.de/vgnExt_oeffi/{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON"
+    return f"https://efa.vgn.de/vgnExt_oeffi/{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&type_sl=stopID&name_sl=de:09564:1976&mode=odv"
 
 
 @pytest.fixture
@@ -47,6 +47,11 @@ def test_init_params_mode_line():
     }
 
     assert cmd._parameters == expected_params
+
+
+def test_init_params_mode_unknown():
+    with pytest.raises(ValueError):
+        CommandServingLines("invalid", "my_value")
 
 
 # test 'add_param()'
