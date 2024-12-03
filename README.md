@@ -24,24 +24,24 @@ pip install .
 ```
 
 ## EfaClient functions
-|Function                ´                                        |Implementation    |Documentation     |
-|-----------------------------------------------------------------|------------------|------------------|
+|Function                                                     |Implementation    |Documentation     |
+|-------------------------------------------------------------|------------------|------------------|
 |[info()](#info)                                              |:white_check_mark:|:white_check_mark:|
-|[locations_by_name()](#locations_by_name())                    |:white_check_mark:|:x:               |
-|[location_by_coord()](#locations_by_coord())                   |:x:               |:x:               |
-|[trip()](#trip())                                              |:x:               |:x:               |
-|[departures_by_location()](#departures_by_location())          |:white_check_mark:|:x:               |
-|[transportations_by_name()](#transportations_by_name())        |:white_check_mark:|:x:               |
-|[transportations_by_location()](#transportations_by_location())|:white_check_mark:|:x:               |
-|[locations_by_transportation()](#locations_by_transportation())|:x:               |:x:               |
-|[coords()](#coords())                                          |:x:               |:x:               |
-|[geo_object()](#geo_object())                                  |:x:               |:x:               |
-|[trip_stop_time()](#trip_stop_time())                          |:x:               |:x:               |
-|[stop_seq_coord()](#stop_seq_coord())                          |:x:               |:x:               |
-|[map_route()](#map_route())                                    |:x:               |:x:               |
-|[add_info()](#add_info())                                      |:x:               |:x:               |
-|[stop_list()](#stop_list())                                    |:x:               |:x:               |
-|[line_list()](#line_list())                                    |:x:               |:x:               |
+|[locations_by_name()](#locations_by_name)                    |:white_check_mark:|:x:               |
+|[location_by_coord()](#locations_by_coord)                   |:x:               |:x:               |
+|[trip()](#trip)                                              |:x:               |:x:               |
+|[departures_by_location()](#departures_by_location)          |:white_check_mark:|:x:               |
+|[transportations_by_name()](#transportations_by_name)        |:white_check_mark:|:x:               |
+|[transportations_by_location()](#transportations_by_location)|:white_check_mark:|:x:               |
+|[locations_by_transportation()](#locations_by_transportation)|:x:               |:x:               |
+|[coords()](#coords)                                          |:x:               |:x:               |
+|[geo_object()](#geo_object)                                  |:x:               |:x:               |
+|[trip_stop_time()](#trip_stop_time)                          |:x:               |:x:               |
+|[stop_seq_coord()](#stop_seq_coord)                          |:x:               |:x:               |
+|[map_route()](#map_route)                                    |:x:               |:x:               |
+|[add_info()](#add_info)                                      |:x:               |:x:               |
+|[stop_list()](#stop_list)                                    |:x:               |:x:               |
+|[line_list()](#line_list)                                    |:x:               |:x:               |
 
 ### info()
 Get end API system information
