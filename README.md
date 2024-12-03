@@ -27,7 +27,7 @@ pip install .
 |Function name                                                |Implementation    |Documentation     |
 |-------------------------------------------------------------|------------------|------------------|
 |[info()](#info)                                              |:white_check_mark:|:white_check_mark:|
-|[locations_by_name()](#locations_by_name)                    |:white_check_mark:|:x:               |
+|[locations_by_name()](#locations_by_name)                    |:white_check_mark:|:white_check_mark:|
 |[location_by_coord()](#locations_by_coord)                   |:x:               |:x:               |
 |[trip()](#trip)                                              |:x:               |:x:               |
 |[departures_by_location()](#departures_by_location)          |:white_check_mark:|:x:               |
@@ -70,10 +70,10 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 ### locations_by_name()
 Find localities by name or unique id.
 ### Arguments
-|Arguments|Type|Required|Description|
-|---------|----|--------|-----------|
-|name     |str |required|Name or id ID of locality to search for|
-|filters  |list|optional|The localition search may be limited by certain types of objects using this parameter|
+|Arguments|Type                |Required|Description|
+|---------|--------------------|--------|-----------|
+|name     |str                 |required|Name or id ID of locality to search for|
+|filters  |list[[LocationFilter](#locationfilter)]|optional|The localition search may be limited by certain types of objects using this parameter|
 ### Return value
 List of [Locations](#location) sorted by match quility. 
 
@@ -168,3 +168,4 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 
 ## Enums
 ### TransportType
+### LocationFilter
