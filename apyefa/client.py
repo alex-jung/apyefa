@@ -59,24 +59,22 @@ class EfaClient:
         return command.parse(response)
 
     async def locations_by_name(
-        self, name: str, type="any", filters: list[LocationFilter] = []
+        self, name: str, filters: list[LocationFilter] = []
     ) -> list[Location]:
         """Find location(s) by provided `name` (coordinates or stop name).
 
         Args:
             name (str): Name or ID of location to search (case insensitive)
             e.g. "Plärrer", "Nordostbanhof" or "de:09564:704"
-            type (str, optional): ['any', 'coord']. Defaults to "any".
             filters (list[LocationFilter]): List of filters to apply for search. Defaults to empty.
 
         Returns:
             list[Location]: List of location(s) returned by endpoint. List is sorted by match quality.
         """
         _LOGGER.info(f"Request location search by name/id/coord {name}")
-        _LOGGER.debug(f"type: {type}")
         _LOGGER.debug(f"filters: {filters}")
 
-        command = CommandStopFinder(type, name)
+        command = CommandStopFinder("any", name)
 
         if filters:
             command.add_param("anyObjFilter_sf", sum(filters))
@@ -88,7 +86,7 @@ class EfaClient:
         return command.parse(response)
 
     async def location_by_coord(self) -> Location:
-        pass
+        raise NotImplementedError
 
     async def trip(self):
         raise NotImplementedError
@@ -148,7 +146,7 @@ class EfaClient:
     async def locations_by_transportation(
         self, line: str | Transportation
     ) -> list[Location]:
-        pass
+        raise NotImplementedError
 
     async def _run_query(self, query: str) -> str:
         _LOGGER.info(f"Run query {query}")
