@@ -109,7 +109,7 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     # <LocationType.POI: 'poi'>
 
     # Search by stop ID
-    locations: list[Location] = await client.locations_by_name("de:09564:704", filters=[LocationFilter.ADDRESSES, LocationFilter.POIS])
+    locations: list[Location] = await client.locations_by_name("de:09564:704")
 
     print(len(locations))
     print(location[0].id)
