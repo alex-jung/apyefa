@@ -10,12 +10,13 @@ from apyefa.commands import (
     CommandSystemInfo,
 )
 from apyefa.data_classes import (
+    CoordFormat,
     Departure,
     Location,
     LocationFilter,
     LocationType,
     SystemInfo,
-    Transportation,
+    Transport,
 )
 from apyefa.exceptions import EfaConnectionError
 
@@ -59,34 +60,63 @@ class EfaClient:
         return command.parse(response)
 
     async def locations_by_name(
-        self, name: str, filters: list[LocationFilter] = []
+        self, name: str, *, filters: list[LocationFilter] = [], limit: int = 30
     ) -> list[Location]:
-        """Find location(s) by provided `name` (coordinates or stop name).
+        """Find location(s) by provided stop `name`.
 
         Args:
             name (str): Name or ID of location to search (case insensitive)
             e.g. "Plärrer", "Nordostbanhof" or "de:09564:704"
-            filters (list[LocationFilter]): List of filters to apply for search. Defaults to empty.
+            filters (list[LocationFilter], optional): List of filters to apply for search. Defaults to empty.
+            limit (int, optional): Max size of returned list. Defaults to 30.
 
         Returns:
             list[Location]: List of location(s) returned by endpoint. List is sorted by match quality.
         """
-        _LOGGER.info(f"Request location search by name/id/coord {name}")
+        _LOGGER.info(f"Request location search by name/id: {name}")
         _LOGGER.debug(f"filters: {filters}")
+        _LOGGER.debug(f"limit: {limit}")
 
         command = CommandStopFinder("any", name)
+        command.add_param("anyMaxSizeHitList", limit)
 
         if filters:
             command.add_param("anyObjFilter_sf", sum(filters))
-
-        # ToDo: add possibility for search by coordinates
 
         response = await self._run_query(self._build_url(command))
 
         return command.parse(response)
 
-    async def location_by_coord(self) -> Location:
-        raise NotImplementedError
+    async def location_by_coord(
+        self,
+        coord_x: float,
+        coord_y: float,
+        format: CoordFormat = CoordFormat.WGS84,
+        limit: int = 10,
+    ) -> Location:
+        """Find location(s) by provided `coordinates`.
+
+        Args:
+            coord_x (float): X coordinate
+            coord_y (float): Y coordinate
+            format (CoordFormat, optional): Coordinate format. Defaults to CoordFormat.WGS84.
+            limit (int, optional): Max size of returned list. Defaults to 10.
+
+        Returns:
+            Location: List of location(s) returned by endpoint. List is sorted by match quality.
+        """
+        _LOGGER.info("Request location search by coordinates")
+        _LOGGER.debug(f"coord_x: {coord_x}")
+        _LOGGER.debug(f"coord_y: {coord_y}")
+        _LOGGER.debug(f"format: {format}")
+        _LOGGER.debug(f"limit: {limit}")
+
+        command = CommandStopFinder("coord", f"{coord_x}:{coord_y}:{format}")
+        command.add_param("anyMaxSizeHitList", limit)
+
+        response = await self._run_query(self._build_url(command))
+
+        return command.parse(response)
 
     async def trip(self):
         raise NotImplementedError
@@ -114,8 +144,8 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def transportations_by_name(self, line: str) -> list[Transportation]:
-        _LOGGER.info("Request serving lines by name")
+    async def transports_by_name(self, line: str) -> list[Transport]:
+        _LOGGER.info("Request transports by name")
         _LOGGER.debug(f"line:{line}")
 
         command = CommandServingLines("line", line)
@@ -124,10 +154,8 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def transportations_by_location(
-        self, location: str | Location
-    ) -> list[Transportation]:
-        _LOGGER.info("Request lines by location")
+    async def transports_by_location(self, location: str | Location) -> list[Transport]:
+        _LOGGER.info("Request transports by location")
         _LOGGER.debug(f"location:{location}")
 
         if isinstance(location, Location):
@@ -143,9 +171,7 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def locations_by_transportation(
-        self, line: str | Transportation
-    ) -> list[Location]:
+    async def locations_by_transport(self, line: str | Transport) -> list[Location]:
         raise NotImplementedError
 
     async def _run_query(self, query: str) -> str:

@@ -46,6 +46,10 @@ class LocationFilter(IntEnum):
     POST_CODES = 64
 
 
+class CoordFormat(StrEnum):
+    WGS84 = "WGS84 [dd.ddddd]"
+
+
 # Validation schemas
 def IsLocationType(type: str):
     if type not in [x.value for x in LocationFilter]:
@@ -308,7 +312,7 @@ class Departure(_Base):
         estimated_time = parse_datetime(data.get("departureTimeEstimated", None))
         infos = data.get("infos")
 
-        transportation = Transportation.from_dict(data.get("transportation"))
+        transportation = Transport.from_dict(data.get("transportation"))
         line_name = transportation.name
         transport = transportation.product
         origin = transportation.origin
@@ -330,7 +334,7 @@ class Departure(_Base):
 
 
 @dataclass(frozen=True)
-class Transportation(_Base):
+class Transport(_Base):
     id: str
     name: str
     description: str
@@ -364,7 +368,7 @@ class Transportation(_Base):
         origin = Location.from_dict(data.get("origin"))
         properties = data.get("properties", {})
 
-        return Transportation(
+        return Transport(
             data,
             id,
             name,

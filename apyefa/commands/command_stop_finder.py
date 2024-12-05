@@ -35,7 +35,7 @@ class CommandStopFinder(Command):
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
                 Required("type_sf", default="any"): Any("any", "coord"),
                 Required("name_sf"): str,
-                Optional("anyMaxSizeHitList", default=30): int,
+                Optional("anyMaxSizeHitList"): int,
                 Optional("anySigWhenPerfectNoOtherMatches"): Any("0", "1", 0, 1),
                 Optional("anyResSort_sf"): str,
                 Optional("anyObjFilter_sf"): int,

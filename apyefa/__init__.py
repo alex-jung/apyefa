@@ -5,7 +5,7 @@ from apyefa.data_classes import (
     LocationFilter,
     LocationType,
     SystemInfo,
-    Transportation,
+    Transport,
     TransportType,
 )
 
@@ -15,7 +15,7 @@ __all__ = [
     "LocationType",
     "Departure",
     "SystemInfo",
-    "Transportation",
+    "Transport",
     "TransportType",
     "EfaClient",
 ]

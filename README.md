@@ -2,7 +2,7 @@
 [![Python package](https://github.com/alex-jung/apyefa/actions/workflows/python-package.yml/badge.svg)](https://github.com/alex-jung/apyefa/actions/workflows/python-package.yml)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # Intro
-**apyefa** is a python package used to asynchronously fetch data about public transit routing interfaces like [efa.vgn](https://efa.vgn.de/vgnExt_oeffi/"). It can request itineraries for Bus/Tram/Subway etc. connections and return data in a human and machine readable format.
+**apyefa** is a python package used to asynchronously fetch public transit routing data via EFA  interfaces like [efa.vgn](https://efa.vgn.de/vgnExt_oeffi/"). It can request itineraries for Bus/Trams/Subways etc. connections and return data in a human and machine readable format.
 # Installation
 You only need to install the **apyefa** package, for example using pip:
 ``` bash
@@ -16,7 +16,7 @@ To describe(!)
 ```
 
 # Development setup
-Create and activate virtual environment
+Create and activate virtual environment. Then install dependencies requiered for `apefa` package.
 ``` bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -24,24 +24,24 @@ pip install .
 ```
 
 # EfaClient functions
-|Function name                                                |Implementation    |Documentation     |
-|-------------------------------------------------------------|------------------|------------------|
-|[info()](#info)                                              |:white_check_mark:|:white_check_mark:|
-|[locations_by_name()](#locations_by_name)                    |:white_check_mark:|:white_check_mark:|
-|[location_by_coord()](#locations_by_coord)                   |:x:               |:x:               |
-|[trip()](#trip)                                              |:x:               |:x:               |
-|[departures_by_location()](#departures_by_location)          |:white_check_mark:|:x:               |
-|[transportations_by_name()](#transportations_by_name)        |:white_check_mark:|:x:               |
-|[transportations_by_location()](#transportations_by_location)|:white_check_mark:|:x:               |
-|[locations_by_transportation()](#locations_by_transportation)|:x:               |:x:               |
-|[coords()](#coords)                                          |:x:               |:x:               |
-|[geo_object()](#geo_object)                                  |:x:               |:x:               |
-|[trip_stop_time()](#trip_stop_time)                          |:x:               |:x:               |
-|[stop_seq_coord()](#stop_seq_coord)                          |:x:               |:x:               |
-|[map_route()](#map_route)                                    |:x:               |:x:               |
-|[add_info()](#add_info)                                      |:x:               |:x:               |
-|[stop_list()](#stop_list)                                    |:x:               |:x:               |
-|[line_list()](#line_list)                                    |:x:               |:x:               |
+|Function name                                       |Implementation    |Documentation     |
+|----------------------------------------------------|------------------|------------------|
+|[info()](#info)                                     |:white_check_mark:|:white_check_mark:|
+|[locations_by_name()](#locations_by_name)           |:white_check_mark:|:white_check_mark:|
+|[location_by_coord()](#locations_by_coord)          |:x:               |:x:               |
+|[trip()](#trip)                                     |:x:               |:x:               |
+|[departures_by_location()](#departures_by_location) |:white_check_mark:|:x:               |
+|[transport_by_name()](#transport_by_name)           |:white_check_mark:|:x:               |
+|[transport_by_location()](#transport_by_location)   |:white_check_mark:|:x:               |
+|[locations_by_transport()](#locations_by_transport) |:x:               |:x:               |
+|[coords()](#coords)                                 |:x:               |:x:               |
+|[geo_object()](#geo_object)                         |:x:               |:x:               |
+|[trip_stop_time()](#trip_stop_time)                 |:x:               |:x:               |
+|[stop_seq_coord()](#stop_seq_coord)                 |:x:               |:x:               |
+|[map_route()](#map_route)                           |:x:               |:x:               |
+|[add_info()](#add_info)                             |:x:               |:x:               |
+|[stop_list()](#stop_list)                           |:x:               |:x:               |
+|[line_list()](#line_list)                           |:x:               |:x:               |
 
 ## info()
 Provides end API system information.
@@ -53,18 +53,20 @@ None
 #### Example request
 ``` python
 from apyefa import EfaClient, SystemInfo
+from pprint import pprint
 
 async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     info: SystemInfo = await client.info()
 
-    print(info.version)
-    print(info.app_version)
-    print(info.valid_from)
+    pprint(info)
 
     # OUTPUT:
-    # 10.5.17.3
-    # 10.4.30.6 build 16.09.2024 01:30:57
-    # datetime.date(2024, 11, 1)
+    # SystemInfo(version='10.6.14.22',
+    #            app_version='10.4.30.6 build 16.09.2024 01:30:57',
+    #            data_format='EFA10_04_00',
+    #            data_build='2024-12-02T16:53:02Z',
+    #            valid_from=datetime.date(2024, 11, 1),
+    #            valid_to=datetime.date(2025, 12, 13))
 ```
 
 ### locations_by_name()
@@ -75,7 +77,7 @@ Find localities by name or unique id.
 |name     |str                 |required|Name or id ID of locality to search for|
 |filters  |list[[LocationFilter](#locationfilter)]|optional|The localition search may be limited by certain types of objects using this parameter|
 ### Return value
-List of [Locations](#location) sorted by match quility. 
+List of [Locations](#location) sorted by match quality. 
 
 #### Example request
 ``` python
