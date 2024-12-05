@@ -28,7 +28,7 @@ pip install .
 |----------------------------------------------------|------------------|------------------|
 |[info()](#info)                                     |:white_check_mark:|:white_check_mark:|
 |[locations_by_name()](#locations_by_name)           |:white_check_mark:|:white_check_mark:|
-|[location_by_coord()](#locations_by_coord)          |:x:               |:x:               |
+|[location_by_coord()](#locations_by_coord)          |:white_check_mark:|:white_check_mark:|
 |[trip()](#trip)                                     |:x:               |:x:               |
 |[departures_by_location()](#departures_by_location) |:white_check_mark:|:x:               |
 |[transport_by_name()](#transport_by_name)           |:white_check_mark:|:x:               |
@@ -76,6 +76,7 @@ Find localities by name or unique id.
 |---------|--------------------|--------|-----------|
 |name     |str                 |required|Name or id ID of locality to search for|
 |filters  |list[[LocationFilter](#locationfilter)]|optional|The localition search may be limited by certain types of objects using this parameter|
+|limit    |int                 |optional|Max size of returned list. Default value is 30|
 ### Return value
 List of [Locations](#location) sorted by match quality. 
 
@@ -125,10 +126,20 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 ```
 
 ### locations_by_coord()
-Find location(s) by name.
-``` python
-async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
-    locations: list[Location] = await client.locations_by_coord("9.23:48.80:WGS84[dd.ddddd]")
+Find localities by coordinates.
+### Arguments
+|Arguments|Type                |Required|Description|
+|---------|--------------------|--------|-----------|
+|coord_x  |float               |required|X-coordinate|
+|coord_y  |float               |required|Y-coordinate|
+|format   |[CoordFormat](#coordformat)|optional|Coordinates format used for request|
+|limit    |int                 |optional|Max size of returned list. Default value is 10|
+### Return value
+List of [Locations](#location) sorted by match quality. 
+
+#### Example request
+```
+Currently feature doesn't work. Reason is unclear.
 ```
 
 ### trip()
@@ -167,7 +178,7 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 |properties       |dict               ||
 |disassembled_name|date               ||
 |match_quality    |int                ||      
-
+### CoordFormat
 ## Enums
 ### TransportType
 ### LocationFilter
