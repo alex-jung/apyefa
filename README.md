@@ -80,12 +80,13 @@ Find localities by name or unique id.
 ### Return value
 List of [Locations](#location) sorted by match quality. 
 
-#### Example request
+#### Examples
+
+1. Search for all localities contain name `Plärrer`
 ``` python
 from apyefa import EfaClient, Location, LocationFilter
 
 async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
-    # Search by stop name
     locations: list[Location] = await client.locations_by_name("Plärrer")
 
     print(f"Found {len(locations)} location(s)")
@@ -97,24 +98,29 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     # de:09574:7132
     # Hersbruck, Plärrer
     # <LocationType.STOP: 'stop'>
-
-    # Search by stop name and limit the list by using filters
+```
+2. Search for POIs and Addresses with name `Plärrer`
+``` python
+async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     locations: list[Location] = await client.locations_by_name("Plärrer", filters=[LocationFilter.ADDRESSES, LocationFilter.POIS])
-
-    print(len(locations))
+    
+    print(f"Found {len(locations)} location(s)")
     print(location[0].id)
     print(location[0].name)
     print(location[0].loc_type)
+
     # OUTPUT:
     # Found 4 location(s)
     # poiID:1000029001:9564000:-1:N-PLärrer:Nürnberg:N-PLärrer:ANY:POI:4431934:680416:NAV4:vgn
     # Nürnberg, N-PLärrer
     # <LocationType.POI: 'poi'>
-
-    # Search by stop ID
+```
+3. Search by `stop id`
+``` python
+async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     locations: list[Location] = await client.locations_by_name("de:09564:704")
 
-    print(len(locations))
+    print(f"Found {len(locations)} location(s)")
     print(location[0].id)
     print(location[0].name)
     print(location[0].loc_type)
@@ -127,6 +133,7 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 
 ### locations_by_coord()
 Find localities by coordinates.
+> :x: Currently feature doesn't work. Reason is unclear
 ### Arguments
 |Arguments|Type                |Required|Description|
 |---------|--------------------|--------|-----------|
@@ -137,10 +144,6 @@ Find localities by coordinates.
 ### Return value
 List of [Locations](#location) sorted by match quality. 
 
-#### Example request
-```
-Currently feature doesn't work. Reason is unclear.
-```
 
 ### trip()
 ### departures_by_location()
