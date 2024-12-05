@@ -144,8 +144,16 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def transports_by_name(self, line: str) -> list[Transport]:
-        _LOGGER.info("Request transports by name")
+    async def lines_by_name(self, line: str) -> list[Transport]:
+        """Search lines by name. e.g. subway `U3` or bus `65`
+
+        Args:
+            line (str): Line name to search
+
+        Returns:
+            list[Transport]: List of lines
+        """
+        _LOGGER.info("Request lines by name")
         _LOGGER.debug(f"line:{line}")
 
         command = CommandServingLines("line", line)
@@ -154,8 +162,19 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def transports_by_location(self, location: str | Location) -> list[Transport]:
-        _LOGGER.info("Request transports by location")
+    async def lines_by_location(self, location: str | Location) -> list[Transport]:
+        """Search for lines that pass `location`. Location can be location ID like `de:08111:6221` or a Location object
+
+        Args:
+            location (str | Location): Location
+
+        Raises:
+            ValueError: If not a stop location provided but e.g. POI or Address
+
+        Returns:
+            list[Transport]: List of lines
+        """
+        _LOGGER.info("Request lines by location")
         _LOGGER.debug(f"location:{location}")
 
         if isinstance(location, Location):

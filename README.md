@@ -31,8 +31,8 @@ pip install .
 |[location_by_coord()](#locations_by_coord)          |:white_check_mark:|:white_check_mark:|
 |[trip()](#trip)                                     |:x:               |:x:               |
 |[departures_by_location()](#departures_by_location) |:white_check_mark:|:x:               |
-|[transport_by_name()](#transport_by_name)           |:white_check_mark:|:x:               |
-|[transport_by_location()](#transport_by_location)   |:white_check_mark:|:x:               |
+|[lines_by_name()](#lines_by_name)                   |:white_check_mark:|:white_check_mark:|
+|[lines_by_location()](#lines_by_location)           |:white_check_mark:|:white_check_mark:|
 |[locations_by_transport()](#locations_by_transport) |:x:               |:x:               |
 |[coords()](#coords)                                 |:x:               |:x:               |
 |[geo_object()](#geo_object)                         |:x:               |:x:               |
@@ -133,7 +133,9 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 
 ### locations_by_coord()
 Find localities by coordinates.
-> :x: Currently feature doesn't work. Reason is unclear
+
+> :x: Currently endpoint does not sent correct answers
+
 ### Arguments
 |Arguments|Type                |Required|Description|
 |---------|--------------------|--------|-----------|
@@ -144,11 +146,68 @@ Find localities by coordinates.
 ### Return value
 List of [Locations](#location) sorted by match quality. 
 
-
 ### trip()
 ### departures_by_location()
-### transportations_by_name()
-### transportations_by_location()
+### lines_by_name()
+Find lines by name.
+
+### Arguments
+|Arguments|Type                |Required|Description|
+|---------|--------------------|--------|-----------|
+|name  |str               |required|Name of the line to search. e.g. `U1` or `67`|
+
+### Return value
+List of [Lines](#transport).
+> The attribute `origin` of returned `line` objects is None
+
+#### Examples
+``` python
+async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
+    lines: list[Transport] = await client.lines_by_name("U1")
+
+    print(f"Found {len(lines)} line(s)")
+    print(f"id         : {lines[0].id}")
+    print(f"name       : {lines[0].name}")
+    print(f"description: {lines[0].description}")
+    print(f"product    : {lines[0].product}")
+
+    # OUTPUT:
+    # Found 4 line(s)
+    # id         : vgn:11001: :H:j24
+    # name       : U1
+    # description: Fürth Hardhöhe - Nürnberg Plärrer - Hauptbahnhof - Langwasser Süd
+    # product    : <TransportType.SUBWAY: 2> 
+```
+### lines_by_location()
+Find lines pass provided location.
+
+### Arguments
+|Arguments|Type                |Required|Description|
+|---------|--------------------|--------|-----------|
+|location |str \| [Location](#location) |required|Location passed by line|
+
+### Return value
+List of [Lines](#transport).
+> The attribute `origin` of returned `line` objects is None
+
+#### Examples
+``` python
+async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
+    lines: list[Transport] = await client.lines_by_location("de:09564:704")
+
+    print(f"Found {len(lines)} line(s)")
+    print(f"id         : {lines[0].id}")
+    print(f"name       : {lines[0].name}")
+    print(f"description: {lines[0].description}")
+    print(f"product    : {lines[0].product}")
+
+    # OUTPUT:
+    # Found 10 line(s)
+    # id         : vgn:33283: :H:j24
+    # name       : 283
+    # description: Hugenottenplatz - St. Johann - Dechsendorfer Weiher
+    # product    : <TransportType.BUS: 5> 
+```
 ### coords()
 ### geo_object()
 ### trip_stop_time()
@@ -172,16 +231,67 @@ List of [Locations](#location) sorted by match quality.
 |Attribute        |Type               |Description  |
 |-----------------|-------------------|-------------|
 |name             |str                ||
-|loc_type         |LocationType       ||
+|loc_type         |[LocationType](#locationtype)       ||
 |id               |str                ||           |
 |coord            |list[int]          ||
-|transports       |list[TransportType]||
-|parent           |Location           ||
-|stops            |list[Location]     ||
+|transports       |list[[TransportType](#transporttype)]||
+|parent           |[Location](#location)           ||
+|stops            |list[[Location](#location)]     ||
 |properties       |dict               ||
 |disassembled_name|date               ||
 |match_quality    |int                ||      
-### CoordFormat
+### Transport
+|Attribute   |Type|Description              |
+|------------|----|------------------------ |
+|id          |str |Line id                  |
+|name        |str |Line name                |
+|description |str |Route name               |
+|product     |[TransportType](#transporttype) |Type of transportation. Bus, Subway etc.|
+|destination |[Location](#location)|Line destination location|
+|origin      |[Location](#location) \| None|Line start location|
+|properties  |dict|Additional properties    |
 ## Enums
 ### TransportType
+```python
+class TransportType(IntEnum):
+    RAIL        = 0 
+    SUBURBAN    = 1
+    SUBWAY      = 2 
+    CITY_RAIL   = 3 
+    TRAM        = 4
+    BUS         = 5 
+    RBUS        = 6 
+    EXPRESS_BUS = 7
+    CABLE_TRAM  = 8
+    FERRY       = 9 
+    AST         = 10  # Anruf-Sammel-Taxi
+```
+### CoordFormat
+```python
+class CoordFormat(StrEnum):
+    WGS84 = "WGS84 [dd.ddddd]"
+```
 ### LocationFilter
+```python
+class LocationFilter(IntEnum):
+    NO_FILTER     = 0
+    LOCATIONS     = 1
+    STOPS         = 2
+    STREETS       = 4
+    ADDRESSES     = 8
+    INTERSACTIONS = 16
+    POIS          = 32
+    POST_CODES    = 64
+```
+### LocationType
+```python
+class LocationType(StrEnum):
+    STOP     = "stop"
+    POI      = "poi"
+    ADDRESS  = "address"
+    STREET   = "street"
+    LOCALITY = "locality"
+    SUBURB   = "suburb"
+    PLATFORM = "platform"
+    UNKNOWN  = "unknown"
+```
