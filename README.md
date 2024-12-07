@@ -16,7 +16,7 @@ To describe(!)
 ```
 
 # Development setup
-Create and activate virtual environment. Then install dependencies requiered for `apefa` package.
+Create and activate virtual environment. Then install dependencies required by `apefa` package.
 ``` bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -30,7 +30,7 @@ pip install .
 |[locations_by_name()](#locations_by_name)           |:white_check_mark:|:white_check_mark:|
 |[location_by_coord()](#locations_by_coord)          |:white_check_mark:|:white_check_mark:|
 |[trip()](#trip)                                     |:x:               |:x:               |
-|[departures_by_location()](#departures_by_location) |:white_check_mark:|:x:               |
+|[departures_by_location()](#departures_by_location) |:white_check_mark:|:white_check_mark:|
 |[lines_by_name()](#lines_by_name)                   |:white_check_mark:|:white_check_mark:|
 |[lines_by_location()](#lines_by_location)           |:white_check_mark:|:white_check_mark:|
 |[locations_by_transport()](#locations_by_transport) |:x:               |:x:               |
@@ -45,12 +45,16 @@ pip install .
 
 ## info()
 Provides end API system information.
+
 ### Arguments
 None
-### Return value
-[SystemInfo](#systeminfo)
 
-#### Example request
+### Return value
+|Type|Description|
+|----|-----------|
+|[SystemInfo](#systeminfo)|System information object|
+
+### Example request
 ``` python
 from apyefa import EfaClient, SystemInfo
 from pprint import pprint
@@ -69,19 +73,23 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     #            valid_to=datetime.date(2025, 12, 13))
 ```
 
-### locations_by_name()
+## locations_by_name()
 Find localities by name or unique id.
+
 ### Arguments
-|Arguments|Type                |Required|Description|
+|Name     |Type                |Required|Description|
 |---------|--------------------|--------|-----------|
 |name     |str                 |required|Name or id ID of locality to search for|
-|filters  |list[[LocationFilter](#locationfilter)]|optional|The localition search may be limited by certain types of objects using this parameter|
-|limit    |int                 |optional|Max size of returned list. Default value is 30|
+|filters  |list[[LocationFilter](#locationfilter)]|optional|The localition search may be limited by certain types of objects using this parameter. Default value is `[]`|
+|limit    |int                 |optional|Max size of returned list. Default value is `30`|
+
 ### Return value
-List of [Locations](#location) sorted by match quality. 
+|Type|Description|
+|----|-----------|
+|list[[Location](#location)]|List of locations found py provided name sorted by match quality|
 
-#### Examples
 
+### Examples
 1. Search for all localities contain name `Plärrer`
 ``` python
 from apyefa import EfaClient, Location, LocationFilter
@@ -131,10 +139,10 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     # <LocationType.STOP: 'stop'>
 ```
 
-### locations_by_coord()
+## locations_by_coord()
 Find localities by coordinates.
 
-> :x: Currently endpoint does not sent correct answers
+> :x: Currently test endpoint does not sent any answers for this request
 
 ### Arguments
 |Arguments|Type                |Required|Description|
@@ -142,13 +150,51 @@ Find localities by coordinates.
 |coord_x  |float               |required|X-coordinate|
 |coord_y  |float               |required|Y-coordinate|
 |format   |[CoordFormat](#coordformat)|optional|Coordinates format used for request|
-|limit    |int                 |optional|Max size of returned list. Default value is 10|
-### Return value
-List of [Locations](#location) sorted by match quality. 
+|limit    |int                 |optional|Max size of returned list. Default value is `10`|
 
-### trip()
-### departures_by_location()
-### lines_by_name()
+### Return value
+|Type|Description|
+|----|-----------|
+|list[[Location](#location)]|List of locations found py provided name sorted by match quality|
+
+## trip()
+
+## departures_by_location()
+Find all departures for a specific location
+
+### Arguments
+|Arguments|Type                |Required|Description|
+|---------|--------------------|--------|-----------|
+|stop     |[Location](#location) \| str |required|Location for which the departures are being sought|
+|limit    |int                 |optional|Max size of returned list. Default value is `40`|
+|date     |str                 |optional|Date/time for which the departures are sought in format "YYYYMMDD hh:mm", "YYYYMMDD" or "mm:hh". Default value is `empty`|
+
+### Return value
+|Type|Description|
+|----|-----------|
+|list[[Departure](#departure)]|List of departures sorted by departure time|
+
+### Examples
+``` python
+from apyefa import EfaClient, Departure
+
+async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
+    departures: list[Departure] = await client.departures_by_location("de:09564:704", limit=3, date="22:13")
+
+    print(f"Found {len(departures)} departure(s)")
+    print(location[0].line_name)
+    print(location[0].route)
+    print(location[0].transport)
+    print(location[0].planned_time)
+    # OUTPUT:
+    # Found 3 departure(s)
+    # U3
+    # Nordwestring - Hauptbahnhof - Plärrer - Großreuth bei Schweinau
+    # <TransportType.SUBWAY: 2>
+    # datetime.datetime(2024, 12, 7, 22, 16, tzinfo=zoneinfo.ZoneInfo(key='Europe/Berlin'))
+```
+
+## lines_by_name()
 Find lines by name.
 
 ### Arguments
@@ -157,10 +203,13 @@ Find lines by name.
 |name  |str               |required|Name of the line to search. e.g. `U1` or `67`|
 
 ### Return value
-List of [Lines](#transport).
-> The attribute `origin` of returned `line` objects is None
+|Type|Description|
+|----|-----------|
+|list[[Line](#transport)]|List of lines found for provided name|
 
-#### Examples
+> NOTE: The attribute `origin` of returned `line` objects is None
+
+### Examples
 ``` python
 async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     lines: list[Transport] = await client.lines_by_name("U1")
@@ -178,19 +227,23 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     # description: Fürth Hardhöhe - Nürnberg Plärrer - Hauptbahnhof - Langwasser Süd
     # product    : <TransportType.SUBWAY: 2> 
 ```
-### lines_by_location()
+
+## lines_by_location()
 Find lines pass provided location.
 
 ### Arguments
 |Arguments|Type                |Required|Description|
 |---------|--------------------|--------|-----------|
-|location |str \| [Location](#location) |required|Location passed by line|
+|location |str \| [Location](#location) |required|The location passed by searched line(s)|
 
 ### Return value
-List of [Lines](#transport).
+|Type|Description|
+|----|-----------|
+|list[[Line](#transport)]|List of lines found for provided location|
+
 > The attribute `origin` of returned `line` objects is None
 
-#### Examples
+### Examples
 ``` python
 async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     lines: list[Transport] = await client.lines_by_location("de:09564:704")
@@ -208,17 +261,18 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
     # description: Hugenottenplatz - St. Johann - Dechsendorfer Weiher
     # product    : <TransportType.BUS: 5> 
 ```
-### coords()
-### geo_object()
-### trip_stop_time()
-### stop_seq_coord()
-### map_route()
-### add_info()
-### stop_list()
-### line_list()
 
-## Data Classes
-### SystemInfo
+## coords()
+## geo_object()
+## trip_stop_time()
+## stop_seq_coord()
+## map_route()
+## add_info()
+## stop_list()
+## line_list()
+
+# Data Classes
+## SystemInfo
 |Attribute   |Type|Description  |
 |------------|----|------------------------ |
 |version     |str |API internal information|
@@ -227,20 +281,33 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 |data_build  |str |API internal information |
 |valid_from  |date|Start validity date      |
 |valid_to    |date|End validity date        |
-### Location
+
+## Location
 |Attribute        |Type               |Description  |
 |-----------------|-------------------|-------------|
-|name             |str                ||
-|loc_type         |[LocationType](#locationtype)       ||
-|id               |str                ||           |
-|coord            |list[int]          ||
-|transports       |list[[TransportType](#transporttype)]||
-|parent           |[Location](#location)           ||
-|stops            |list[[Location](#location)]     ||
-|properties       |dict               ||
-|disassembled_name|date               ||
-|match_quality    |int                ||      
-### Transport
+|name             |str                |Name of location e.g. `Nürnberg, Nordostbahnhof`|
+|loc_type         |[LocationType](#locationtype)|Type of location e.g. `STOP` or `POI`|
+|id               |str                |Location unique id|
+|coord            |list[int]          |Location coordinates|
+|transports       |list[[TransportType](#transporttype)]|Transports this location supports|
+|parent           |[Location](#location) \| None|Parent location|
+|stops            |list[[Location](#location)]|Location with type `STOP` assigned to this location|
+|properties       |dict               |API internal information|
+
+## Departure
+|Attribute      |Type|Description              |
+|---------------|----|------------------------|
+|location       |[Location](#location) |Location of departure|
+|line_name      |str |Line name e.g. `U3`|
+|route          |str |The complete route name from origin to destination stops e.g. `Nordwestring - Hauptbahnhof - Plärrer - Großreuth bei Schweinau`|
+|origin         |[Location](#location)|Origin location|
+|destination    |[Location](#location)|Destination location|
+|transport      |[TransportType](#transporttype)|Transport type e.g. `Bus` or `Subway`|
+|planned_time   |datetime|Planned departure time|
+|estimated_time |datetime \| None|Estimated departure time(will be provided by endpoits supporting real time mode)|
+|infos          |list[dict] \| None|List of ICS messages|
+
+## Transport
 |Attribute   |Type|Description              |
 |------------|----|------------------------ |
 |id          |str |Line id                  |
@@ -250,8 +317,9 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 |destination |[Location](#location)|Line destination location|
 |origin      |[Location](#location) \| None|Line start location|
 |properties  |dict|Additional properties    |
-## Enums
-### TransportType
+
+# Enums
+## TransportType
 ```python
 class TransportType(IntEnum):
     RAIL        = 0 
@@ -266,12 +334,14 @@ class TransportType(IntEnum):
     FERRY       = 9 
     AST         = 10  # Anruf-Sammel-Taxi
 ```
-### CoordFormat
+
+## CoordFormat
 ```python
 class CoordFormat(StrEnum):
     WGS84 = "WGS84 [dd.ddddd]"
 ```
-### LocationFilter
+
+## LocationFilter
 ```python
 class LocationFilter(IntEnum):
     NO_FILTER     = 0
@@ -283,7 +353,8 @@ class LocationFilter(IntEnum):
     POIS          = 32
     POST_CODES    = 64
 ```
-### LocationType
+
+## LocationType
 ```python
 class LocationType(StrEnum):
     STOP     = "stop"

@@ -62,7 +62,7 @@ class EfaClient:
     async def locations_by_name(
         self, name: str, *, filters: list[LocationFilter] = [], limit: int = 30
     ) -> list[Location]:
-        """Find location(s) by provided stop `name`.
+        """Find location(s) by provided `name`.
 
         Args:
             name (str): Name or ID of location to search (case insensitive)
