@@ -33,6 +33,7 @@ class CommandStopFinder(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
+                Required("coordOutputFormat", default="WGS84"): Any("WGS84"),
                 Required("type_sf", default="any"): Any("any", "coord"),
                 Required("name_sf"): str,
                 Optional("anyMaxSizeHitList"): int,

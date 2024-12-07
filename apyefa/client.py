@@ -12,11 +12,11 @@ from apyefa.commands import (
 from apyefa.data_classes import (
     CoordFormat,
     Departure,
+    Line,
     Location,
     LocationFilter,
     LocationType,
     SystemInfo,
-    Transport,
 )
 from apyefa.exceptions import EfaConnectionError
 
@@ -144,7 +144,7 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def lines_by_name(self, line: str) -> list[Transport]:
+    async def lines_by_name(self, line: str) -> list[Line]:
         """Search lines by name. e.g. subway `U3` or bus `65`
 
         Args:
@@ -162,7 +162,7 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def lines_by_location(self, location: str | Location) -> list[Transport]:
+    async def lines_by_location(self, location: str | Location) -> list[Line]:
         """Search for lines that pass `location`. Location can be location ID like `de:08111:6221` or a Location object
 
         Args:
@@ -190,7 +190,7 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def locations_by_transport(self, line: str | Transport) -> list[Location]:
+    async def locations_by_line(self, line: str | Line) -> list[Location]:
         raise NotImplementedError
 
     async def _run_query(self, query: str) -> str:

@@ -33,7 +33,7 @@ pip install .
 |[departures_by_location()](#departures_by_location) |:white_check_mark:|:white_check_mark:|
 |[lines_by_name()](#lines_by_name)                   |:white_check_mark:|:white_check_mark:|
 |[lines_by_location()](#lines_by_location)           |:white_check_mark:|:white_check_mark:|
-|[locations_by_transport()](#locations_by_transport) |:x:               |:x:               |
+|[locations_by_line()](#locations_by_line) |:x:               |:x:               |
 |[coords()](#coords)                                 |:x:               |:x:               |
 |[geo_object()](#geo_object)                         |:x:               |:x:               |
 |[trip_stop_time()](#trip_stop_time)                 |:x:               |:x:               |
@@ -205,14 +205,14 @@ Find lines by name.
 ### Return value
 |Type|Description|
 |----|-----------|
-|list[[Line](#transport)]|List of lines found for provided name|
+|list[[Line](#line)]|List of lines found for provided name|
 
 > NOTE: The attribute `origin` of returned `line` objects is None
 
 ### Examples
 ``` python
 async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
-    lines: list[Transport] = await client.lines_by_name("U1")
+    lines: list[Line] = await client.lines_by_name("U1")
 
     print(f"Found {len(lines)} line(s)")
     print(f"id         : {lines[0].id}")
@@ -239,14 +239,14 @@ Find lines pass provided location.
 ### Return value
 |Type|Description|
 |----|-----------|
-|list[[Line](#transport)]|List of lines found for provided location|
+|list[[Line](#line)]|List of lines found for provided location|
 
 > The attribute `origin` of returned `line` objects is None
 
 ### Examples
 ``` python
 async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
-    lines: list[Transport] = await client.lines_by_location("de:09564:704")
+    lines: list[Line] = await client.lines_by_location("de:09564:704")
 
     print(f"Found {len(lines)} line(s)")
     print(f"id         : {lines[0].id}")
@@ -289,7 +289,7 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 |loc_type         |[LocationType](#locationtype)|Type of location e.g. `STOP` or `POI`|
 |id               |str                |Location unique id|
 |coord            |list[int]          |Location coordinates|
-|transports       |list[[TransportType](#transporttype)]|Transports this location supports|
+|transports       |list[[TransportType](#transporttype)]|Transport type(s) this location pass|
 |parent           |[Location](#location) \| None|Parent location|
 |stops            |list[[Location](#location)]|Location with type `STOP` assigned to this location|
 |properties       |dict               |API internal information|
@@ -307,7 +307,7 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 |estimated_time |datetime \| None|Estimated departure time(will be provided by endpoits supporting real time mode)|
 |infos          |list[dict] \| None|List of ICS messages|
 
-## Transport
+## Line
 |Attribute   |Type|Description              |
 |------------|----|------------------------ |
 |id          |str |Line id                  |

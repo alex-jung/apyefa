@@ -29,6 +29,7 @@ def test_init_params_mode_odv():
 
     expected_params = {
         "outputFormat": "rapidJSON",
+        "coordOutputFormat": "WGS84",
         "mode": "odv",
         "name_sl": "my_value",
         "type_sl": "stopID",
@@ -42,6 +43,7 @@ def test_init_params_mode_line():
 
     expected_params = {
         "outputFormat": "rapidJSON",
+        "coordOutputFormat": "WGS84",
         "mode": "line",
         "lineName": "my_value",
     }
@@ -87,6 +89,6 @@ def test_add_param_failed(command, param, value):
 
 # test 'to_str() and __str()__'
 def test_to_str(command):
-    expected_str = f"{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&type_sl=stopID&name_sl=my_name&mode=odv"
+    expected_str = f"{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&coordOutputFormat=WGS84&type_sl=stopID&name_sl=my_name&mode=odv"
 
     assert command.to_str() == expected_str and str(command) == expected_str

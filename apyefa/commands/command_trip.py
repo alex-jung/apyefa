@@ -18,6 +18,7 @@ class CommandTrip(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
+                Required("coordOutputFormat", default="WGS84"): Any("WGS84"),
                 Required("type_origin", default="any"): Any("any", "coord"),
                 Required("name_origin"): str,
                 Required("type_destination", default="any"): Any("any", "coord"),

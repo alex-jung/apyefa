@@ -47,7 +47,7 @@ class LocationFilter(IntEnum):
 
 
 class CoordFormat(StrEnum):
-    WGS84 = "WGS84 [dd.ddddd]"
+    WGS84 = "WGS84[dd.ddddd]"
 
 
 # Validation schemas
@@ -312,12 +312,12 @@ class Departure(_Base):
         estimated_time = parse_datetime(data.get("departureTimeEstimated", None))
         infos = data.get("infos")
 
-        transportation = Transport.from_dict(data.get("transportation"))
-        line_name = transportation.name
-        transport = transportation.product
-        origin = transportation.origin
-        destination = transportation.destination
-        route = transportation.description
+        line = Line.from_dict(data.get("transportation"))
+        line_name = line.name
+        transport = line.product
+        origin = line.origin
+        destination = line.destination
+        route = line.description
 
         return Departure(
             data,
@@ -334,7 +334,7 @@ class Departure(_Base):
 
 
 @dataclass(frozen=True)
-class Transport(_Base):
+class Line(_Base):
     id: str
     name: str
     description: str
@@ -368,7 +368,7 @@ class Transport(_Base):
         origin = Location.from_dict(data.get("origin"))
         properties = data.get("properties", {})
 
-        return Transport(
+        return Line(
             data,
             id,
             name,

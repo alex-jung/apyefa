@@ -18,6 +18,7 @@ class Command:
         self._format: str = output_format
 
         self.add_param("outputFormat", output_format)
+        self.add_param("coordOutputFormat", "WGS84")
 
     def add_param(self, param: str, value: str):
         if not param or not value:

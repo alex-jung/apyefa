@@ -1,11 +1,11 @@
 from apyefa.client import EfaClient
 from apyefa.data_classes import (
     Departure,
+    Line,
     Location,
     LocationFilter,
     LocationType,
     SystemInfo,
-    Transport,
     TransportType,
 )
 
@@ -15,7 +15,7 @@ __all__ = [
     "LocationType",
     "Departure",
     "SystemInfo",
-    "Transport",
+    "Line",
     "TransportType",
     "EfaClient",
 ]

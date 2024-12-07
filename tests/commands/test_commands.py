@@ -51,9 +51,19 @@ def test_init_macro_and_name(command, cmd_name, cmd_macro, request):
 @pytest.mark.parametrize(
     "command, expected",
     [
-        ("system_info_command", {"outputFormat": "rapidJSON"}),
-        ("departures_command", {"outputFormat": "rapidJSON", "name_dm": "my_stop"}),
-        ("trip_command", {"outputFormat": "rapidJSON"}),
+        (
+            "system_info_command",
+            {"outputFormat": "rapidJSON", "coordOutputFormat": "WGS84"},
+        ),
+        (
+            "departures_command",
+            {
+                "outputFormat": "rapidJSON",
+                "coordOutputFormat": "WGS84",
+                "name_dm": "my_stop",
+            },
+        ),
+        ("trip_command", {"outputFormat": "rapidJSON", "coordOutputFormat": "WGS84"}),
     ],
 )
 def test_init_parameters(command, expected, request):
@@ -69,6 +79,7 @@ def test_init_parameters_serving_lines():
     cmd = CommandServingLines("line", "my_value")
     assert cmd._parameters == {
         "outputFormat": "rapidJSON",
+        "coordOutputFormat": "WGS84",
         "lineName": "my_value",
         "mode": "line",
     }
@@ -76,6 +87,7 @@ def test_init_parameters_serving_lines():
     cmd = CommandServingLines("odv", "my_value")
     assert cmd._parameters == {
         "outputFormat": "rapidJSON",
+        "coordOutputFormat": "WGS84",
         "type_sl": "stopID",
         "name_sl": "my_value",
         "mode": "odv",

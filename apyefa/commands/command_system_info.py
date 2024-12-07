@@ -1,6 +1,6 @@
 import logging
 
-from voluptuous import Any, Required, Schema
+from voluptuous import Any, Optional, Required, Schema
 
 from apyefa.commands.command import Command
 from apyefa.data_classes import SystemInfo
@@ -23,5 +23,6 @@ class CommandSystemInfo(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
+                Optional("coordOutputFormat", default="WGS84"): Any("WGS84"),
             }
         )

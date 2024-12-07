@@ -13,6 +13,7 @@ class MockCommand(Command):
         return Schema(
             {
                 Required("outputFormat"): str,
+                Required("coordOutputFormat"): str,
                 Optional("valid_param"): str,
                 Optional("itdDate"): str,
                 Optional("itdTime"): str,
@@ -39,11 +40,16 @@ def mock_command() -> MockCommand:
 def test_command_init(mock_command):
     assert mock_command._name == "my_name"
     assert mock_command._macro == "my_macro"
-    assert len(mock_command._parameters) == 1  # outputFormat=rapidJSON set as default
+    assert (
+        len(mock_command._parameters) == 2
+    )  # outputFormat=rapidJSON and coordOutputFormas set as default
 
 
 def test_command_to_str_default_params(mock_command):
-    assert str(mock_command) == "my_name?commonMacro=my_macro&outputFormat=rapidJSON"
+    assert (
+        str(mock_command)
+        == "my_name?commonMacro=my_macro&outputFormat=rapidJSON&coordOutputFormat=WGS84"
+    )
 
 
 def test_command_validation_failed(mock_command):
@@ -85,20 +91,20 @@ def test_command_add_param_empty(mock_command, param, value):
 
 
 def test_command_add_param_success(mock_command):
-    assert len(mock_command._parameters) == 1
+    assert len(mock_command._parameters) == 2
 
     mock_command.add_param("valid_param", "value1")
 
-    assert len(mock_command._parameters) == 2
+    assert len(mock_command._parameters) == 3
 
 
 @pytest.mark.parametrize("value", [None, ""])
 def test_command_add_param_datetime_empty(mock_command, value):
-    assert len(mock_command._parameters) == 1
+    assert len(mock_command._parameters) == 2
 
     mock_command.add_param_datetime(value)
 
-    assert len(mock_command._parameters) == 1
+    assert len(mock_command._parameters) == 2
 
 
 @pytest.mark.parametrize("param, value", [("test_param", "test_value")])

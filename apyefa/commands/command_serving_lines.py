@@ -3,7 +3,7 @@ import logging
 from voluptuous import Any, Optional, Required, Schema
 
 from apyefa.commands.command import Command
-from apyefa.data_classes import Transport
+from apyefa.data_classes import Line
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class CommandServingLines(Command):
 
         self.add_param("mode", mode)
 
-    def parse(self, data: dict) -> list[Transport]:
+    def parse(self, data: dict) -> list[Line]:
         data = self._get_parser().parse(data)
 
         transportations = data.get("lines", [])
@@ -33,7 +33,7 @@ class CommandServingLines(Command):
         result = []
 
         for t in transportations:
-            result.append(Transport.from_dict(t))
+            result.append(Line.from_dict(t))
 
         return result
 
@@ -41,6 +41,7 @@ class CommandServingLines(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
+                Required("coordOutputFormat", default="WGS84"): Any("WGS84"),
                 Required("mode", default="line"): Any("odv", "line"),
                 # mode 'odv'
                 Optional("type_sl"): Any("stopID"),

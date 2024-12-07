@@ -32,6 +32,7 @@ class CommandDepartures(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
+                Required("coordOutputFormat", default="WGS84"): Any("WGS84"),
                 Required("name_dm"): str,
                 Required("type_dm", default="stop"): Any("any", "stop"),
                 Required("mode", default="direct"): Any("any", "direct"),
