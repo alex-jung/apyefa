@@ -1,33 +1,26 @@
-import json
 import logging
-from enum import StrEnum
-from pprint import pprint
 
 import aiohttp
 
-from apyefa.data_classes import Stop, StopFilter, SystemInfo
-from apyefa.exceptions import EfaConnectionError
-from apyefa.requests import (
-    DeparturesRequest,
-    Request,
-    StopFinderRequest,
-    SystemInfoRequest,
+from apyefa.commands import (
+    Command,
+    CommandDepartures,
+    CommandServingLines,
+    CommandStopFinder,
+    CommandSystemInfo,
 )
-
-from .requests.req_serving_lines import ServingLinesRequest
+from apyefa.data_classes import (
+    CoordFormat,
+    Departure,
+    Line,
+    Location,
+    LocationFilter,
+    LocationType,
+    SystemInfo,
+)
+from apyefa.exceptions import EfaConnectionError
 
 _LOGGER = logging.getLogger(__name__)
-
-
-class Requests(StrEnum):
-    LINE_STOP = "XML_LINESTOP_REQUEST?commonMacro=linestop"
-    COORD = "XML_COORD_REQUEST?commonMacro=coord"
-    GEO_OBJ = "XML_GEOOBJECT_REQUEST?commonMacro=geoobj"
-    TRIP_STOP_TIMES = "XML_TRIPSTOPTIMES_REQUEST?commonMacro=tripstoptimes"
-    STOP_SEQ_COORD = "XML_STOPSEQCOORD_REQUEST?commonMacro=stopseqcoord"
-    ADD_INFO = "XML_ADDINFO_REQUEST?commonMacro=addinfo"
-    STOP_LIST = "XML_STOP_LIST_REQUEST?commonMacro=stoplist"
-    LINE_LIST = "XML_LINELIST_REQUEST?commonMacro=linelist"
 
 
 class EfaClient:
@@ -61,97 +54,162 @@ class EfaClient:
         """
         _LOGGER.info("Request system info")
 
-        request = SystemInfoRequest()
-        response = await self._run_query(self._build_url(request))
+        command = CommandSystemInfo()
+        response = await self._run_query(self._build_url(command))
 
-        return request.parse(response)
+        return command.parse(response)
 
-    async def stops(
-        self, name: str, type="any", filters: list[StopFilter] = []
-    ) -> list[Stop]:
-        """Find stop(s) by provided `name` (coordinates or stop name).
+    async def locations_by_name(
+        self, name: str, *, filters: list[LocationFilter] = [], limit: int = 30
+    ) -> list[Location]:
+        """Find location(s) by provided `name`.
 
         Args:
-            name (str): Name or ID of stop to search (case insensitive)
+            name (str): Name or ID of location to search (case insensitive)
             e.g. "Plärrer", "Nordostbanhof" or "de:09564:704"
-            type (str, optional): ['any', 'coord']. Defaults to "any".
-            filters (list[StopFilter]): List of filters to apply for search. Defaults to empty.
+            filters (list[LocationFilter], optional): List of filters to apply for search. Defaults to empty.
+            limit (int, optional): Max size of returned list. Defaults to 30.
 
         Returns:
-            list[Stop]: List of station(s) provided by endpoint. List is sorted by match quality.
+            list[Location]: List of location(s) returned by endpoint. List is sorted by match quality.
         """
-        _LOGGER.info(f"Request stop search by name/id/coord {name}")
-        _LOGGER.debug(f"type: {type}")
+        _LOGGER.info(f"Request location search by name/id: {name}")
         _LOGGER.debug(f"filters: {filters}")
+        _LOGGER.debug(f"limit: {limit}")
 
-        request = StopFinderRequest(type, name)
+        command = CommandStopFinder("any", name)
+        command.add_param("anyMaxSizeHitList", limit)
 
         if filters:
-            request.add_param("anyObjFilter_sf", sum(filters))
+            command.add_param("anyObjFilter_sf", sum(filters))
 
-        # ToDo: add possibility for search by coordinates
+        response = await self._run_query(self._build_url(command))
 
-        response = await self._run_query(self._build_url(request))
+        return command.parse(response)
 
-        return request.parse(response)
+    async def location_by_coord(
+        self,
+        coord_x: float,
+        coord_y: float,
+        format: CoordFormat = CoordFormat.WGS84,
+        limit: int = 10,
+    ) -> Location:
+        """Find location(s) by provided `coordinates`.
+
+        Args:
+            coord_x (float): X coordinate
+            coord_y (float): Y coordinate
+            format (CoordFormat, optional): Coordinate format. Defaults to CoordFormat.WGS84.
+            limit (int, optional): Max size of returned list. Defaults to 10.
+
+        Returns:
+            Location: List of location(s) returned by endpoint. List is sorted by match quality.
+        """
+        _LOGGER.info("Request location search by coordinates")
+        _LOGGER.debug(f"coord_x: {coord_x}")
+        _LOGGER.debug(f"coord_y: {coord_y}")
+        _LOGGER.debug(f"format: {format}")
+        _LOGGER.debug(f"limit: {limit}")
+
+        command = CommandStopFinder("coord", f"{coord_x}:{coord_y}:{format}")
+        command.add_param("anyMaxSizeHitList", limit)
+
+        response = await self._run_query(self._build_url(command))
+
+        return command.parse(response)
 
     async def trip(self):
         raise NotImplementedError
 
-    async def departures(
+    async def departures_by_location(
         self,
-        stop: Stop | str,
+        stop: Location | str,
         limit=40,
         date: str | None = None,
-    ):
+    ) -> list[Departure]:
         _LOGGER.info(f"Request departures for stop {stop}")
         _LOGGER.debug(f"limit: {limit}")
         _LOGGER.debug(f"date: {date}")
 
-        if isinstance(stop, Stop):
+        if isinstance(stop, Location):
             stop = stop.id
 
-        request = DeparturesRequest(stop)
+        command = CommandDepartures(stop)
 
         # add parameters
-        request.add_param("limit", limit)
-        request.add_param_datetime(date)
+        command.add_param("limit", limit)
+        command.add_param_datetime(date)
 
-        response = await self._run_query(self._build_url(request))
+        response = await self._run_query(self._build_url(command))
 
-        return request.parse(response)
+        return command.parse(response)
 
-    async def serving_lines(self):
-        _LOGGER.info("Request serving lines")
+    async def lines_by_name(self, line: str) -> list[Line]:
+        """Search lines by name. e.g. subway `U3` or bus `65`
 
-        request = ServingLinesRequest("odv")
+        Args:
+            line (str): Line name to search
 
-        # add parameters
-        # request.add_param("lineName", "U2")
-        request.add_param("type_sl", "stopID")
-        request.add_param("name_sl", "de:09562:3857")
+        Returns:
+            list[Transport]: List of lines
+        """
+        _LOGGER.info("Request lines by name")
+        _LOGGER.debug(f"line:{line}")
 
-        response = await self._run_query(self._build_url(request))
+        command = CommandServingLines("line", line)
 
-        return request.parse(response)
+        response = await self._run_query(self._build_url(command))
 
-    async def _run_query(self, query: str) -> dict:
+        return command.parse(response)
+
+    async def lines_by_location(self, location: str | Location) -> list[Line]:
+        """Search for lines that pass `location`. Location can be location ID like `de:08111:6221` or a Location object
+
+        Args:
+            location (str | Location): Location
+
+        Raises:
+            ValueError: If not a stop location provided but e.g. POI or Address
+
+        Returns:
+            list[Transport]: List of lines
+        """
+        _LOGGER.info("Request lines by location")
+        _LOGGER.debug(f"location:{location}")
+
+        if isinstance(location, Location):
+            if location.loc_type != LocationType.STOP:
+                raise ValueError(
+                    f"Only locations with type Stop are supported, provided {location.loc_type}"
+                )
+            location = location.id
+
+        command = CommandServingLines("odv", location)
+
+        response = await self._run_query(self._build_url(command))
+
+        return command.parse(response)
+
+    async def locations_by_line(self, line: str | Line) -> list[Location]:
+        raise NotImplementedError
+
+    async def _run_query(self, query: str) -> str:
         _LOGGER.info(f"Run query {query}")
 
-        async with self._client_session.get(query) as response:
+        async with self._client_session.get(query, ssl=False) as response:
             _LOGGER.debug(f"Response status: {response.status}")
 
             if response.status == 200:
-                response_json = json.loads(await response.text())
+                text = await response.text()
 
                 if self._debug:
-                    pprint(response_json)
+                    _LOGGER.debug(text)
 
-                return response_json
+                return text
             else:
                 raise EfaConnectionError(
-                    f"Failed to fetch data from endpoint. Returned {response.status}"
+                    f"Failed to fetch data from endpoint. Returned status: {response.status}"
                 )
 
-    def _build_url(self, request: Request):
-        return self._base_url + str(request)
+    def _build_url(self, cmd: Command):
+        return self._base_url + str(cmd)

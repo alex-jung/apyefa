@@ -2,12 +2,12 @@ import logging
 
 from voluptuous import Any, Optional, Required, Schema
 
-from apyefa.requests.req import Request
+from apyefa.commands.command import Command
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class TripRequest(Request):
+class CommandTrip(Command):
     def __init__(self) -> None:
         super().__init__("XML_TRIP_REQUEST2", "trip")
 
@@ -18,6 +18,7 @@ class TripRequest(Request):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
+                Required("coordOutputFormat", default="WGS84"): Any("WGS84"),
                 Required("type_origin", default="any"): Any("any", "coord"),
                 Required("name_origin"): str,
                 Required("type_destination", default="any"): Any("any", "coord"),
@@ -28,6 +29,3 @@ class TripRequest(Request):
                 Optional("useRealtime"): Any("0", "1", 0, 1),
             }
         )
-
-    def _get_response_schema(self) -> Schema:
-        raise NotImplementedError("Abstract method not implemented")

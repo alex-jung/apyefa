@@ -3,20 +3,22 @@ from abc import abstractmethod
 
 from voluptuous import MultipleInvalid, Schema
 
-from apyefa.exceptions import EfaParameterError, EfaResponseInvalid
+from apyefa.commands.parsers.rapid_json_parser import RapidJsonParser
+from apyefa.exceptions import EfaFormatNotSupported, EfaParameterError
 from apyefa.helpers import is_date, is_datetime, is_time
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class Request:
+class Command:
     def __init__(self, name: str, macro: str, output_format: str = "rapidJSON") -> None:
         self._name: str = name
         self._macro: str = macro
         self._parameters: dict[str, str] = {}
-        self._schema: Schema = self._get_params_schema()
+        self._format: str = output_format
 
         self.add_param("outputFormat", output_format)
+        self.add_param("coordOutputFormat", "WGS84")
 
     def add_param(self, param: str, value: str):
         if not param or not value:
@@ -24,7 +26,7 @@ class Request:
 
         if param not in self._get_params_schema().schema.keys():
             raise EfaParameterError(
-                f"Parameter {param} is now allowed for this request"
+                f"Parameter {param} is now allowed for this command"
             )
 
         _LOGGER.debug(f'Add parameter "{param}" with value "{value}"')
@@ -48,45 +50,42 @@ class Request:
         else:
             raise ValueError("Date(time) provided in invalid format")
 
+    def to_str(self) -> str:
+        self._parameters = self.extend_with_defaults()
+        self.validate()
+
+        return f"{self._name}?commonMacro={self._macro}" + self._get_params_as_str()
+
     def __str__(self) -> str:
-        """Validate parameters schema and return parameters as string\n
-        for URL parametrization
+        return self.to_str()
 
-        Returns:
-            str: parameters as string ready to use in URL
-        """
-
-        self._parameters = self._validate_params(self._parameters)
-
-        return f"{self._name}?commonMacro={self._macro}" + self._params_str()
-
-    def _validate_params(self, params: dict) -> dict:
-        """Validate parameters stored for request. This step will extend parameters with default values
-        as well.
-
-        Returns:
-            str: Validated and extended with default value parameters dict
+    def validate(self):
+        """Validate self._parameters
 
         Raises:
-            EfaParameterError: Validation of some parameter(s) failed
+            EfaParameterError: some of parameters are missing or have invalid values
         """
+        params_schema = self._get_params_schema()
+
         try:
-            return self._schema(params)
+            params = self.extend_with_defaults()
+            params_schema(params)
         except MultipleInvalid as exc:
             _LOGGER.error("Parameters validation failed", exc_info=exc)
             raise EfaParameterError(str(exc)) from exc
 
-    def _validate_response(self, response: dict) -> None:
-        val_schema = self._get_response_schema()
+    def extend_with_defaults(self) -> dict:
+        """Extend self._parameters with default values
 
-        try:
-            val_schema(response)
-        except MultipleInvalid as exc:
-            raise EfaResponseInvalid(
-                f"Server response validataion failed - {str(exc)}"
-            ) from None
+        Returns:
+            dict: parameters extended with default values
+        """
 
-    def _params_str(self) -> str:
+        params_schema = self._get_params_schema()
+
+        return params_schema(self._parameters)
+
+    def _get_params_as_str(self) -> str:
         """Return parameters concatenated with &
 
         Returns:
@@ -106,5 +105,11 @@ class Request:
         raise NotImplementedError("Abstract method not implemented")
 
     @abstractmethod
-    def _get_response_schema(self) -> Schema:
-        raise NotImplementedError("Abstract method not implemented")
+    def _get_parser(self):
+        match self._format:
+            case "rapidJSON":
+                return RapidJsonParser()
+            case _:
+                raise EfaFormatNotSupported(
+                    f"Output format {self._format} is not supported"
+                )

@@ -6,13 +6,23 @@ TZ_INFO = ZoneInfo("Europe/Berlin")
 
 
 def parse_datetime(date: str) -> datetime.datetime:
+    if not date:
+        return None
+
     dt = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
 
     return dt.astimezone(TZ_INFO)
 
 
 def parse_date(date: str) -> datetime.date:
+    if not date:
+        return None
+
     return datetime.datetime.strptime(date, "%Y-%m-%d").date()
+
+
+def to_date(date: datetime.date) -> datetime.date:
+    return datetime.datetime.strftime(date, "%Y-%m-%d")
 
 
 def is_datetime(date: str):
