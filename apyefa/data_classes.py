@@ -180,6 +180,7 @@ SCHEMA_DEPARTURE: Final = vol.Schema(
         vol.Optional("departureTimeEstimated"): vol.Datetime("%Y-%m-%dT%H:%M:%S%z"),
         vol.Required("transportation"): SCHEMA_TRANSPORTATION,
         vol.Optional("infos"): list,
+        vol.Optional("hints"): list,
     }
 )
 
@@ -293,6 +294,7 @@ class Departure(_Base):
     planned_time: datetime
     estimated_time: datetime | None = None
     infos: list[dict] = field(default_factory=[])
+    hints: list[dict] = field(default_factory=[])
 
     _schema = SCHEMA_DEPARTURE
 
@@ -311,6 +313,7 @@ class Departure(_Base):
         planned_time = parse_datetime(data.get("departureTimePlanned", None))
         estimated_time = parse_datetime(data.get("departureTimeEstimated", None))
         infos = data.get("infos")
+        hints = data.get("hints")
 
         line = Line.from_dict(data.get("transportation"))
         line_name = line.name
@@ -330,6 +333,7 @@ class Departure(_Base):
             planned_time,
             estimated_time,
             infos,
+            hints,
         )
 
 
