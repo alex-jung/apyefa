@@ -1,15 +1,18 @@
 import asyncio
-from apyefa import EfaClient, StopFilter
 from pprint import pprint
+
+from apyefa import EfaClient, LocationFilter
 
 
 async def main():
     async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
         result = await asyncio.gather(
             client.info(),
-            client.stops("Nürnberg Plärrer"),
-            client.stops("Nordostbahnhof", filters=[StopFilter.STOPS]),
-            client.departures("de:09564:704", limit=10, date="20241126 16:30"),
+            client.locations_by_name("Nürnberg Plärrer"),
+            client.locations_by_name("Nordostbahnhof", filters=[LocationFilter.STOPS]),
+            client.departures_by_location(
+                "de:09564:704", limit=10, date="20241126 16:30"
+            ),
         )
 
     print("System Info".center(60, "-"))

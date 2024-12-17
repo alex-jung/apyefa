@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "apyefa"
-version = "0.0.2"
+version = "0.0.3"
 requires-python = ">= 3.11"
 description = "Python API for EFA(Elektronische Fahrplanauskunft) async requests"
 authors = [
@@ -18,9 +18,9 @@ license = {file = "LICENSE"}
 keywords = ["efa", "vgn", "gtfs", "public transport", "traffic"]
 
 dependencies = [
-    "aiohttp==3.11.7",
-    "voluptuous==0.15.2",
-    "tzdata==2024.2"
+    "aiohttp>=3.11.7",
+    "voluptuous>=0.15.2",
+    "tzdata>=2024.2"
 ]
 
 [project.optional-dependencies]
@@ -28,9 +28,9 @@ tests = [
   'coverage>=5.0.3',
   'pytest-cov',
   'pytest',
-  'pytest-asyncio==0.24.0',
+  'pytest-asyncio>=0.24.0',
   'pytest-benchmark[histogram]>=3.2.1',
-  'requests==2.32.3'
+  'requests>=2.32.3'
 ]
 
 [tool.pytest.ini_options]
