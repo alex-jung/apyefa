@@ -12,7 +12,7 @@ STOP_ID_PLAERRER: Final = "de:09564:704"
 
 @pytest.fixture(scope="module")
 def query_url():
-    return f"https://efa.vgn.de/vgnExt_oeffi/{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&name_dm={STOP_ID_PLAERRER}&itdTime=2216&itdDate=20241110&mode=direct&type_dm=stop"
+    return f"https://efa.vgn.de/vgnExt_oeffi/{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&name_dm={STOP_ID_PLAERRER}&mode=direct&type_dm=stop"
 
 
 @pytest.fixture

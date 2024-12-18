@@ -37,6 +37,7 @@ tests = [
 minversion = "6.0"
 asyncio_mode="auto"
 addopts = "-ra -q"
+asyncio_default_fixture_loop_scope = "function"
 testpaths = [
     "tests"
 ]
