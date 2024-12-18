@@ -21,18 +21,48 @@ class LocationType(StrEnum):
     UNKNOWN = "unknown"
 
 
+class InfoType(StrEnum):
+    AREA_INFO = "areaInfo"
+    STOP_INFO = "stopInfo"
+    STOP_BLOCKING = "stopBlocking"
+    LINE_INFO = "lineInfo"
+    LINE_BLOCKING = "lineBlocking"
+    ROUTE_INFO = "routeInfo"
+    ROUTE_BLOCKING = "routeBlocking"
+    GENERAL_INFO = "generalInfo"
+    BANNER_INFO = "bannerInfo"
+    TRAFFIC_INFO = "trafficInformation"
+
+
+class InfoPriority(StrEnum):
+    VERY_LOW = "veryLow"
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+    VERY_HIGH = "veryHigh"
+
+
 class TransportType(IntEnum):
-    RAIL = 0  # RB
+    TRAIN = 0  # Zug
     SUBURBAN = 1  # S-Bahn
     SUBWAY = 2  # U-Bahn
     CITY_RAIL = 3  # Stadtbahn
     TRAM = 4  # Straßenbahn
-    BUS = 5  # Bus
-    RBUS = 6  # Regional Bus
+    CITY_BUS = 5  # Stadtbus
+    REGIONAL_BUS = 6  # Regionalbus
     EXPRESS_BUS = 7  # Schnellbus
-    CABLE_TRAM = 8  # Seilbahn
+    CABLE_RAIL = 8  # Seilbahn
     FERRY = 9  # Schief
     AST = 10  # Anruf-Sammel-Taxi
+    SUSPENSION_RAIL = 11  # Schwebebahn
+    AIRPLANE = 12  # Flugzeug
+    REGIONAL_TRAIN = 13  # Reginalzug (z.B. IRE, RE und RB)
+    NATIONAL_TRAIN = 14  # Nationaler Zug (z.B. IR und D)
+    INTERNATINAL_TRAIN = 15  # Internationaler Zug (z.B. IC und EC)
+    HIGH_SPEED_TRAIN = 16  # Hochgeschwindigkeitzüge (z.B. ICE)
+    RAIL_REPLACEMENT_TRANSPORT = 17  # Schienenersatzverkehr
+    SHUTTLE_TRAIN = 18  # Schuttlezug
+    CITIZEN_BUS = 19  # Bürgerbus
 
 
 class LocationFilter(IntEnum):
@@ -63,7 +93,8 @@ SCHEMA_PROPERTIES = vol.Schema(
         vol.Optional("area"): str,
         vol.Optional("platform"): str,
         vol.Optional("platformName"): str,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 SCHEMA_LINE_PROPERTIES: Final = vol.Schema(
@@ -143,14 +174,14 @@ SCHEMA_TRANSPORTATION: Final = vol.Schema(
     {
         vol.Required("id"): str,
         vol.Required("name"): str,
-        vol.Required("disassembledName"): str,
         vol.Required("number"): str,
-        vol.Required("description"): str,
         vol.Required("product"): SCHEMA_PRODUCT,
+        vol.Optional("description"): str,
         vol.Optional("operator"): SCHEMA_OPERATOR,
         vol.Optional("destination"): SCHEMA_LOCATION,
         vol.Optional("origin"): SCHEMA_LOCATION,
         vol.Optional("properties"): dict,
+        vol.Optional("disassembledName"): str,
     }
 )
 
@@ -181,7 +212,8 @@ SCHEMA_DEPARTURE: Final = vol.Schema(
         vol.Required("transportation"): SCHEMA_TRANSPORTATION,
         vol.Optional("infos"): list,
         vol.Optional("hints"): list,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 
@@ -367,7 +399,8 @@ class Line(_Base):
         # number = data.get("number")
         description = data.get("description")
         product = TransportType(data.get("product").get("class"))
-        operator = data.get("operator").get("name")
+        # operator = data.get("operator", None).get("name", None)
+        operator = "None"
         destination = Location.from_dict(data.get("destination"))
         origin = Location.from_dict(data.get("origin"))
         properties = data.get("properties", {})
