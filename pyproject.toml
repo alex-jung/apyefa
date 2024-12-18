@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "apyefa"
-version = "0.0.3"
+version = "0.0.4"
 requires-python = ">= 3.11"
 description = "Python API for EFA(Elektronische Fahrplanauskunft) async requests"
 authors = [
@@ -15,7 +15,7 @@ authors = [
 ]
 readme = "README.md"
 license = {file = "LICENSE"}
-keywords = ["efa", "vgn", "gtfs", "public transport", "traffic"]
+keywords = ["efa", "public transport", "traffic"]
 
 dependencies = [
     "aiohttp>=3.11.7",
