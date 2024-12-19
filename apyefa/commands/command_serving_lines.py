@@ -1,9 +1,9 @@
 import logging
 
-from voluptuous import Any, Optional, Required, Schema
+from voluptuous import Any, Optional, Range, Required, Schema
 
 from apyefa.commands.command import Command
-from apyefa.data_classes import Line
+from apyefa.data_classes import Line, LineRequestType
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,7 +48,9 @@ class CommandServingLines(Command):
                 Optional("name_sl"): str,
                 # mode 'line'
                 Optional("lineName"): str,
-                Optional("lineReqType"): int,
+                Optional("lineReqType"): Range(
+                    min=0, max=sum([x.value for x in LineRequestType])
+                ),
                 Optional("mergeDir"): Any("0", "1", 0, 1),
                 Optional("lsShowTrainsExplicit"): Any("0", "1", 0, 1),
                 Optional("line"): str,

@@ -235,13 +235,12 @@ Find lines pass provided location.
 |Arguments|Type                |Required|Description|
 |---------|--------------------|--------|-----------|
 |location |str \| [Location](#location) |required|The location passed by searched line(s)|
+|req_types|list[[LineRequestType](#lineRequestType)]|optional|The result presentation type(s) can be defined with this argument. Default value is `[]`
 
 ### Return value
 |Type|Description|
 |----|-----------|
 |list[[Line](#line)]|List of lines found for provided location|
-
-> The attribute `origin` of returned `line` objects is None
 
 ### Examples
 ``` python
@@ -322,17 +321,37 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 ## TransportType
 ```python
 class TransportType(IntEnum):
-    RAIL        = 0 
-    SUBURBAN    = 1
-    SUBWAY      = 2 
-    CITY_RAIL   = 3 
-    TRAM        = 4
-    BUS         = 5 
-    RBUS        = 6 
-    EXPRESS_BUS = 7
-    CABLE_TRAM  = 8
-    FERRY       = 9 
-    AST         = 10  # Anruf-Sammel-Taxi
+    TRAIN                      = 0  # Zug
+    SUBURBAN                   = 1  # S-Bahn
+    SUBWAY                     = 2  # U-Bahn
+    CITY_RAIL                  = 3  # Stadtbahn
+    TRAM                       = 4  # Straßenbahn
+    CITY_BUS                   = 5  # Stadtbus
+    REGIONAL_BUS               = 6  # Regionalbus
+    EXPRESS_BUS                = 7  # Schnellbus
+    CABLE_RAIL                 = 8  # Seilbahn
+    FERRY                      = 9  # Schief
+    AST                        = 10 # Anruf-Sammel-Taxi
+    SUSPENSION_RAIL            = 11 # Schwebebahn
+    AIRPLANE                   = 12 # Flugzeug
+    REGIONAL_TRAIN             = 13 # Reginalzug (z.B. IRE, RE und RB)
+    NATIONAL_TRAIN             = 14 # Nationaler Zug (z.B. IR und D)
+    INTERNATINAL_TRAIN         = 15 # Internationaler Zug (z.B. IC und EC)
+    HIGH_SPEED_TRAIN           = 16 # Hochgeschwindigkeitzüge (z.B. ICE)
+    RAIL_REPLACEMENT_TRANSPORT = 17 # Schienenersatzverkehr
+    SHUTTLE_TRAIN              = 18 # Schuttlezug
+    CITIZEN_BUS                = 19 # Bürgerbus
+```
+
+## LineRequestType
+```python
+class LineRequestType(IntEnum):
+    NONE              = 0
+    DEPARTURE_MONITOR = 1
+    STOP_TIMETABLE    = 2
+    TIMETABLE         = 4
+    ROUTE_MAPS        = 8
+    STATION_TIMETABLE = 16
 ```
 
 ## CoordFormat

@@ -76,6 +76,15 @@ class LocationFilter(IntEnum):
     POST_CODES = 64
 
 
+class LineRequestType(IntEnum):
+    NONE = 0
+    DEPARTURE_MONITOR = 1
+    STOP_TIMETABLE = 2
+    TIMETABLE = 4
+    ROUTE_MAPS = 8
+    STATION_TIMETABLE = 16
+
+
 class CoordFormat(StrEnum):
     WGS84 = "WGS84[dd.ddddd]"
 
