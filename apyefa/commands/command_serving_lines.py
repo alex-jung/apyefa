@@ -3,7 +3,7 @@ import logging
 from voluptuous import Any, Optional, Range, Required, Schema
 
 from apyefa.commands.command import Command
-from apyefa.data_classes import Line, LineRequestType
+from apyefa.data_classes import CoordFormat, Line, LineRequestType
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +41,9 @@ class CommandServingLines(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
-                Required("coordOutputFormat", default="WGS84"): Any("WGS84"),
+                Required("coordOutputFormat", default="WGS84"): Any(
+                    *[x.value for x in CoordFormat]
+                ),
                 Required("mode", default="line"): Any("odv", "line"),
                 # mode 'odv'
                 Optional("type_sl"): Any("stopID"),

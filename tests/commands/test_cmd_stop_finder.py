@@ -24,7 +24,7 @@ def test_init_name_and_macro(command):
 def test_init_params(command):
     expected_params = {
         "outputFormat": "rapidJSON",
-        "coordOutputFormat": "WGS84",
+        "coordOutputFormat": "WGS84[dd.ddddd]",
         "type_sf": "any",
         "name_sf": "my_name",
     }
@@ -49,7 +49,7 @@ def test_add_param_failed(command, param, value):
 
 # test 'to_str() and __str()__'
 def test_to_str(command):
-    expected_str = f"{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&coordOutputFormat=WGS84&type_sf=any&name_sf=my_name"
+    expected_str = f"{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&coordOutputFormat=WGS84[dd.ddddd]&type_sf=any&name_sf=my_name"
 
     assert command.to_str() == expected_str and str(command) == expected_str
 

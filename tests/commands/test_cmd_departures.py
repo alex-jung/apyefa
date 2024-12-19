@@ -28,7 +28,7 @@ def test_init_name_and_macro(command):
 def test_init_params(command):
     expected_params = {
         "outputFormat": "rapidJSON",
-        "coordOutputFormat": "WGS84",
+        "coordOutputFormat": "WGS84[dd.ddddd]",
         "name_dm": "my_stop",
     }
 

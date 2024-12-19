@@ -3,7 +3,7 @@ import logging
 from voluptuous import Any, Optional, Range, Required, Schema
 
 from apyefa.commands.command import Command
-from apyefa.data_classes import Location, LocationFilter
+from apyefa.data_classes import CoordFormat, Location, LocationFilter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,7 +33,9 @@ class CommandStopFinder(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
-                Required("coordOutputFormat", default="WGS84"): Any("WGS84"),
+                Required("coordOutputFormat", default="WGS84"): Any(
+                    *[x.value for x in CoordFormat]
+                ),
                 Required("type_sf", default="any"): Any("any", "coord"),
                 Required("name_sf"): str,
                 Optional("anyMaxSizeHitList"): int,
@@ -41,6 +43,10 @@ class CommandStopFinder(Command):
                 Optional("anyResSort_sf"): str,
                 Optional("anyObjFilter_sf"): int,
                 Optional("doNotSearchForStops_sf"): Any("0", "1", 0, 1),
+                Optional("locationInfoActive_sf"): Any("0", "1", 0, 1),
+                Optional("useHouseNumberList_sf"): Any("0", "1", 0, 1),
+                Optional("useLocalityMainStop"): Any("0", "1", 0, 1),
+                Optional("prMinQu"): int,
                 Optional("anyObjFilter_origin"): Range(
                     min=0, max=sum([x.value for x in LocationFilter])
                 ),

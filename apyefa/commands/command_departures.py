@@ -3,7 +3,7 @@ import logging
 from voluptuous import Any, Date, Datetime, Optional, Required, Schema
 
 from apyefa.commands.command import Command
-from apyefa.data_classes import Departure
+from apyefa.data_classes import CoordFormat, Departure
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +32,9 @@ class CommandDepartures(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
-                Required("coordOutputFormat", default="WGS84"): Any("WGS84"),
+                Required("coordOutputFormat", default="WGS84"): Any(
+                    *[x.value for x in CoordFormat]
+                ),
                 Required("name_dm"): str,
                 Required("type_dm", default="stop"): Any("any", "stop"),
                 Required("mode", default="direct"): Any("any", "direct"),

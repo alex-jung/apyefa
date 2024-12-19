@@ -53,17 +53,20 @@ def test_init_macro_and_name(command, cmd_name, cmd_macro, request):
     [
         (
             "system_info_command",
-            {"outputFormat": "rapidJSON", "coordOutputFormat": "WGS84"},
+            {"outputFormat": "rapidJSON", "coordOutputFormat": "WGS84[dd.ddddd]"},
         ),
         (
             "departures_command",
             {
                 "outputFormat": "rapidJSON",
-                "coordOutputFormat": "WGS84",
+                "coordOutputFormat": "WGS84[dd.ddddd]",
                 "name_dm": "my_stop",
             },
         ),
-        ("trip_command", {"outputFormat": "rapidJSON", "coordOutputFormat": "WGS84"}),
+        (
+            "trip_command",
+            {"outputFormat": "rapidJSON", "coordOutputFormat": "WGS84[dd.ddddd]"},
+        ),
     ],
 )
 def test_init_parameters(command, expected, request):
@@ -79,7 +82,7 @@ def test_init_parameters_serving_lines():
     cmd = CommandServingLines("line", "my_value")
     assert cmd._parameters == {
         "outputFormat": "rapidJSON",
-        "coordOutputFormat": "WGS84",
+        "coordOutputFormat": "WGS84[dd.ddddd]",
         "lineName": "my_value",
         "mode": "line",
     }
@@ -87,7 +90,7 @@ def test_init_parameters_serving_lines():
     cmd = CommandServingLines("odv", "my_value")
     assert cmd._parameters == {
         "outputFormat": "rapidJSON",
-        "coordOutputFormat": "WGS84",
+        "coordOutputFormat": "WGS84[dd.ddddd]",
         "type_sl": "stopID",
         "name_sl": "my_value",
         "mode": "odv",
