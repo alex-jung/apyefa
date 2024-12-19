@@ -97,7 +97,7 @@ def IsLocationType(type: str):
 
 SCHEMA_PROPERTIES = vol.Schema(
     {
-        vol.Required("stopId"): str,
+        vol.Optional("stopId"): str,
         vol.Optional("downloads"): list,
         vol.Optional("area"): str,
         vol.Optional("platform"): str,
