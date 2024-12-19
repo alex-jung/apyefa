@@ -4,6 +4,8 @@ from voluptuous import Any, Optional, Required, Schema
 
 from apyefa.commands.command import Command
 
+from ..data_classes import CoordFormat
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -18,7 +20,9 @@ class CommandTrip(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
-                Required("coordOutputFormat", default="WGS84"): Any("WGS84"),
+                Required("coordOutputFormat", default="WGS84"): Any(
+                    *[x.value for x in CoordFormat]
+                ),
                 Required("type_origin", default="any"): Any("any", "coord"),
                 Required("name_origin"): str,
                 Required("type_destination", default="any"): Any("any", "coord"),

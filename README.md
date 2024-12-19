@@ -140,16 +140,14 @@ async with EfaClient("https://efa.vgn.de/vgnExt_oeffi/") as client:
 ```
 
 ## locations_by_coord()
-Find localities by coordinates.
-
-> :x: Currently test endpoint does not sent any answers for this request
+Find localities by their coordinates.
 
 ### Arguments
 |Arguments|Type                |Required|Description|
 |---------|--------------------|--------|-----------|
 |coord_x  |float               |required|X-coordinate|
 |coord_y  |float               |required|Y-coordinate|
-|format   |[CoordFormat](#coordformat)|optional|Coordinates format used for request|
+|format   |[CoordFormat](#coordformat)|optional|Coordinates format used for request. Default to WGS84.|
 |limit    |int                 |optional|Max size of returned list. Default value is `10`|
 
 ### Return value

@@ -7,6 +7,8 @@ from apyefa.commands.parsers.rapid_json_parser import RapidJsonParser
 from apyefa.exceptions import EfaFormatNotSupported, EfaParameterError
 from apyefa.helpers import is_date, is_datetime, is_time
 
+from ..data_classes import CoordFormat
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -18,7 +20,7 @@ class Command:
         self._format: str = output_format
 
         self.add_param("outputFormat", output_format)
-        self.add_param("coordOutputFormat", "WGS84")
+        self.add_param("coordOutputFormat", CoordFormat.WGS84.value)
 
     def add_param(self, param: str, value: str):
         if not param or not value:

@@ -48,7 +48,7 @@ def test_command_init(mock_command):
 def test_command_to_str_default_params(mock_command):
     assert (
         str(mock_command)
-        == "my_name?commonMacro=my_macro&outputFormat=rapidJSON&coordOutputFormat=WGS84"
+        == "my_name?commonMacro=my_macro&outputFormat=rapidJSON&coordOutputFormat=WGS84[dd.ddddd]"
     )
 
 

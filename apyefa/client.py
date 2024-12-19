@@ -79,14 +79,13 @@ class EfaClient:
         _LOGGER.debug(f"limit: {limit}")
 
         command = CommandStopFinder("any", name)
-        command.add_param("anyMaxSizeHitList", limit)
 
         if filters:
             command.add_param("anyObjFilter_sf", sum(filters))
 
         response = await self._run_query(self._build_url(command))
 
-        return command.parse(response)
+        return command.parse(response)[:limit]
 
     async def location_by_coord(
         self,
@@ -113,11 +112,10 @@ class EfaClient:
         _LOGGER.debug(f"limit: {limit}")
 
         command = CommandStopFinder("coord", f"{coord_x}:{coord_y}:{format}")
-        command.add_param("anyMaxSizeHitList", limit)
 
         response = await self._run_query(self._build_url(command))
 
-        return command.parse(response)
+        return command.parse(response)[:limit]
 
     async def trip(self):
         raise NotImplementedError
