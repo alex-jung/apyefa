@@ -2,6 +2,7 @@ from apyefa.client import EfaClient
 from apyefa.data_classes import (
     Departure,
     Line,
+    LineRequestType,
     Location,
     LocationFilter,
     LocationType,
@@ -12,6 +13,7 @@ from apyefa.data_classes import (
 __all__ = [
     "LocationFilter",
     "Location",
+    "LineRequestType",
     "LocationType",
     "Departure",
     "SystemInfo",
