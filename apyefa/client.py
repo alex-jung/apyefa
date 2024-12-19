@@ -13,6 +13,7 @@ from apyefa.data_classes import (
     CoordFormat,
     Departure,
     Line,
+    LineRequestType,
     Location,
     LocationFilter,
     LocationType,
@@ -162,20 +163,24 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def lines_by_location(self, location: str | Location) -> list[Line]:
-        """Search for lines that pass `location`. Location can be location ID like `de:08111:6221` or a Location object
+    async def lines_by_location(
+        self, location: str | Location, req_types: list[LineRequestType] = []
+    ) -> list[Line]:
+        """Search for lines that pass `location`. Location can be location ID like `de:08111:6221` or a `Location` object
 
         Args:
             location (str | Location): Location
+            req_types (list[LineRequestType], optional): List of types for the request. Defaults to empty.
 
         Raises:
-            ValueError: If not a stop location provided but e.g. POI or Address
+            ValueError: Wrong location type provided e.g. LocationType.POI or LocationType.ADDRESS
 
         Returns:
             list[Transport]: List of lines
         """
         _LOGGER.info("Request lines by location")
         _LOGGER.debug(f"location:{location}")
+        _LOGGER.debug(f"filters :{req_types}")
 
         if isinstance(location, Location):
             if location.loc_type != LocationType.STOP:
@@ -185,6 +190,9 @@ class EfaClient:
             location = location.id
 
         command = CommandServingLines("odv", location)
+
+        if req_types:
+            command.add_param("lineReqType", sum(req_types))
 
         response = await self._run_query(self._build_url(command))
 
