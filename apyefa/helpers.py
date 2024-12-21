@@ -6,6 +6,15 @@ TZ_INFO = ZoneInfo("Europe/Berlin")
 
 
 def parse_datetime(date: str) -> datetime.datetime:
+    """
+    Parses a date string in ISO 8601 format and converts it to a timezone-aware datetime object.
+
+    Args:
+        date (str): The date string to parse in the format "%Y-%m-%dT%H:%M:%S%z".
+
+    Returns:
+        datetime.datetime: A timezone-aware datetime object if the input date is valid, otherwise None.
+    """
     if not date:
         return None
 
@@ -15,6 +24,15 @@ def parse_datetime(date: str) -> datetime.datetime:
 
 
 def parse_date(date: str) -> datetime.date:
+    """
+    Parses a date string in the format 'YYYY-MM-DD' and returns a datetime.date object.
+
+    Args:
+        date (str): The date string to parse.
+
+    Returns:
+        datetime.date: The parsed date object, or None if the input date string is empty.
+    """
     if not date:
         return None
 
@@ -22,10 +40,30 @@ def parse_date(date: str) -> datetime.date:
 
 
 def to_date(date: datetime.date) -> datetime.date:
+    """
+    Convert a datetime.date object to a string in the format 'YYYY-MM-DD'.
+
+    Args:
+        date (datetime.date): The date object to be converted.
+
+    Returns:
+        str: The date as a string in the format 'YYYY-MM-DD'.
+    """
     return datetime.datetime.strftime(date, "%Y-%m-%d")
 
 
 def is_datetime(date: str):
+    """
+    Check if the given string is in the format of a datetime.
+
+    The expected format is "YYYYMMDD HH:MM".
+
+    Args:
+        date (str): The date string to check.
+
+    Returns:
+        bool: True if the string is in the correct datetime format, False otherwise.
+    """
     if not isinstance(date, str) or not date:
         return False
 
@@ -41,6 +79,20 @@ def is_datetime(date: str):
 
 
 def is_date(date: str):
+    """
+    Check if the given string is a valid date in the format YYYYMMDD.
+
+    Args:
+        date (str): The date string to be validated.
+
+    Returns:
+        bool: True if the string is a valid date, False otherwise.
+
+    The function checks if the input string matches the pattern YYYYMMDD,
+    where YYYY is a four-digit year, MM is a two-digit month (01-12), and
+    DD is a two-digit day (01-31). It ensures that the month and day values
+    fall within the valid ranges.
+    """
     if not isinstance(date, str) or not date:
         return False
 
@@ -58,6 +110,15 @@ def is_date(date: str):
 
 
 def is_time(time: str):
+    """
+    Check if the given string is a valid time in HH:MM format.
+
+    Args:
+        time (str): The time string to validate.
+
+    Returns:
+        bool: True if the string is a valid time in HH:MM format, False otherwise.
+    """
     if not isinstance(time, str) or not time:
         return False
 

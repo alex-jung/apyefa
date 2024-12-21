@@ -1,57 +1,109 @@
 from typing import Final
+from unittest.mock import patch
 
 import pytest
 
 from apyefa.commands.command_departures import CommandDepartures
-from apyefa.exceptions import EfaParameterError
+from apyefa.commands.parsers.rapid_json_parser import RapidJsonParser
+from apyefa.exceptions import EfaParameterError, EfaParseError
 
 NAME: Final = "XML_DM_REQUEST"
-MACRO: Final = "dm"
-STOP_ID_PLAERRER: Final = "de:09564:704"
-
-
-@pytest.fixture(scope="module")
-def query_url():
-    return f"https://efa.vgn.de/vgnExt_oeffi/{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&name_dm={STOP_ID_PLAERRER}&mode=direct&type_dm=stop"
 
 
 @pytest.fixture
 def command():
-    return CommandDepartures("my_stop")
+    return CommandDepartures("rapidJSON")
 
 
-def test_init_name_and_macro(command):
+def test_init_name(command):
     assert command._name == NAME
-    assert command._macro == MACRO
 
 
 def test_init_params(command):
     expected_params = {
         "outputFormat": "rapidJSON",
-        "coordOutputFormat": "WGS84[dd.ddddd]",
-        "name_dm": "my_stop",
     }
 
     assert command._parameters == expected_params
 
 
-def test_parse_success(command, run_query):
-    departures = command.parse(run_query)
+def test_parse_success(command):
+    data = {
+        "version": "version",
+        "stopEvents": [
+            {
+                "location": {
+                    "id": "de:09564:510:11:U1_2",
+                    "name": "Nürnberg Hbf",
+                    "disassembledName": "Bstg. 1",
+                    "type": "platform",
+                    "pointType": "PLATFORM",
+                    "coord": [49.446386, 11.081653],
+                    "properties": {
+                        "stopId": "80001020",
+                        "area": "20",
+                        "platform": "1",
+                        "platformName": "Bstg. 1",
+                        "plannedPlatformName": "Bstg. 1",
+                    },
+                    "parent": {
+                        "id": "de:09564:510",
+                        "isGlobalId": True,
+                        "name": "Nürnberg Hbf",
+                        "type": "stop",
+                        "parent": {"name": "Nürnberg", "type": "locality"},
+                        "properties": {"stopId": "80001020"},
+                    },
+                },
+                "departureTimePlanned": "2024-12-21T14:00:00Z",
+                "departureTimeBaseTimetable": "2024-12-21T14:00:06Z",
+                "departureTimeEstimated": "2024-12-21T14:00:00Z",
+                "transportation": {
+                    "id": "van:01001: :H:j25",
+                    "name": "U-Bahn U1",
+                    "disassembledName": "U1",
+                    "number": "U1",
+                    "description": "Fürth Hardhöhe-Nürnberg Langwasser Süd",
+                    "product": {"id": 1, "class": 2, "name": "U-Bahn", "iconId": 1},
+                    "destination": {
+                        "id": "3001507",
+                        "name": "Langwasser Süd",
+                        "type": "stop",
+                    },
+                    "properties": {
+                        "trainType": "ICE",
+                        "tripCode": 2750,
+                        "lineDisplay": "LINE",
+                        "globalId": "de:vgn:402_U1:0",
+                    },
+                    "origin": {
+                        "id": "3000703",
+                        "name": "Nürnberg Gostenhof",
+                        "type": "stop",
+                    },
+                },
+            },
+        ],
+    }
 
-    assert len(departures) > 0
+    with patch.object(RapidJsonParser, "parse") as parse_mock:
+        parse_mock.return_value = data
+        result = command.parse(data)
+
+    assert len(result) == 1
 
 
-@pytest.mark.parametrize("data", [True, 123])
-def test_parse_failed(data, command):
-    with pytest.raises(TypeError):
-        command.parse(data)
+def test_parse_failed(command):
+    with patch.object(RapidJsonParser, "parse") as parse_mock:
+        parse_mock.side_effect = EfaParseError
+
+        with pytest.raises(EfaParseError):
+            command.parse("this is a test response")
 
 
 @pytest.mark.parametrize("value", ["any", "coord"])
 def test_add_valid_param(value, command):
     command.add_param("type_dm", value)
-
-    # no exceptions occured
 
 
 @pytest.mark.parametrize("invalid_param", ["dummy", "STOP"])

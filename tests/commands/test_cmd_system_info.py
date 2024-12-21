@@ -8,27 +8,20 @@ from apyefa.commands.parsers.rapid_json_parser import RapidJsonParser
 from apyefa.exceptions import EfaParameterError, EfaParseError
 
 NAME: Final = "XML_SYSTEMINFO_REQUEST"
-MACRO: Final = "system"
 
 
 @pytest.fixture(scope="module")
 def command():
-    return CommandSystemInfo()
+    yield CommandSystemInfo("rapidJSON")
 
 
 # test constructor
-def test_init_name_and_macro(command):
+def test_init_name(command):
     assert command._name == NAME
-    assert command._macro == MACRO
 
 
 def test_init_parameters(command):
-    expected_params = {
-        "outputFormat": "rapidJSON",
-        "coordOutputFormat": "WGS84[dd.ddddd]",
-    }
-
-    assert command._parameters == expected_params
+    assert command._parameters == {"outputFormat": "rapidJSON"}
 
 
 # test 'add_param()'
@@ -37,7 +30,7 @@ def test_init_parameters(command):
     [("outputFormat", "rapidJSON")],
 )
 def test_add_param_success(command, param, value):
-    command.add_param(param, value)
+    command.add_param(param, value)  # no exception occured
 
 
 @pytest.mark.parametrize("param, value", [("param", "value"), ("name_sf", "my_name")])
@@ -46,11 +39,9 @@ def test_add_param_failed(command, param, value):
         command.add_param(param, value)
 
 
-# test 'to_str() and __str()__'
+# test '__str()__'
 def test_to_str(command):
-    expected_str = f"{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&coordOutputFormat=WGS84[dd.ddddd]"
-
-    assert command.to_str() == expected_str and str(command) == expected_str
+    assert str(command) == f"{NAME}?outputFormat=rapidJSON"
 
 
 # test 'parse()'

@@ -9,8 +9,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class CommandSystemInfo(Command):
-    def __init__(self) -> None:
-        super().__init__("XML_SYSTEMINFO_REQUEST", "system")
+    def __init__(self, format: str) -> None:
+        super().__init__("XML_SYSTEMINFO_REQUEST", format)
 
     def parse(self, data: dict) -> SystemInfo:
         _LOGGER.info("Parsing system info response")

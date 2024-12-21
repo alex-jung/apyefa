@@ -8,28 +8,19 @@ from apyefa.commands.parsers.rapid_json_parser import RapidJsonParser
 from apyefa.exceptions import EfaParameterError, EfaParseError
 
 NAME: Final = "XML_STOPFINDER_REQUEST"
-MACRO: Final = "stopfinder"
 
 
 @pytest.fixture
 def command():
-    return CommandStopFinder("any", "my_name")
+    yield CommandStopFinder("rapidJSON")
 
 
-def test_init_name_and_macro(command):
+def test_init_name(command):
     assert command._name == NAME
-    assert command._macro == MACRO
 
 
 def test_init_params(command):
-    expected_params = {
-        "outputFormat": "rapidJSON",
-        "coordOutputFormat": "WGS84[dd.ddddd]",
-        "type_sf": "any",
-        "name_sf": "my_name",
-    }
-
-    assert command._parameters == expected_params
+    assert command._parameters == {"outputFormat": "rapidJSON"}
 
 
 # test 'add_param()'
@@ -47,11 +38,18 @@ def test_add_param_failed(command, param, value):
         command.add_param(param, value)
 
 
-# test 'to_str() and __str()__'
-def test_to_str(command):
-    expected_str = f"{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&coordOutputFormat=WGS84[dd.ddddd]&type_sf=any&name_sf=my_name"
+# test '__str()__'
+def test_to_str():
+    command = CommandStopFinder("rapidJSON")
+    assert str(command) == f"{NAME}?outputFormat=rapidJSON"
 
-    assert command.to_str() == expected_str and str(command) == expected_str
+    command = CommandStopFinder("rapidJSON")
+    command.add_param("coordOutputFormat", "WGS84[dd.ddddd]")
+
+    assert (
+        str(command)
+        == f"{NAME}?outputFormat=rapidJSON&coordOutputFormat=WGS84[dd.ddddd]"
+    )
 
 
 def test_parse_success(command):
