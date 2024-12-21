@@ -97,7 +97,7 @@ def IsLocationType(type: str):
 
 SCHEMA_PROPERTIES = vol.Schema(
     {
-        vol.Required("stopId"): str,
+        vol.Optional("stopId"): str,
         vol.Optional("downloads"): list,
         vol.Optional("area"): str,
         vol.Optional("platform"): str,
@@ -191,7 +191,8 @@ SCHEMA_TRANSPORTATION: Final = vol.Schema(
         vol.Optional("origin"): SCHEMA_LOCATION,
         vol.Optional("properties"): dict,
         vol.Optional("disassembledName"): str,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 SCHEMA_SYSTEM_INFO: Final = vol.Schema(

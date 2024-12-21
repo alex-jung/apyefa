@@ -9,11 +9,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class CommandStopFinder(Command):
-    def __init__(self, req_type: str, name: str) -> None:
-        super().__init__("XML_STOPFINDER_REQUEST", "stopfinder")
-
-        self.add_param("type_sf", req_type)
-        self.add_param("name_sf", name)
+    def __init__(self, format: str) -> None:
+        super().__init__("XML_STOPFINDER_REQUEST", format)
 
     def parse(self, data: dict) -> list[Location]:
         data = self._get_parser().parse(data)
@@ -38,6 +35,7 @@ class CommandStopFinder(Command):
                 ),
                 Required("type_sf", default="any"): Any("any", "coord"),
                 Required("name_sf"): str,
+                Required("locationServerActive"): Any("0", "1", 0, 1),
                 Optional("anyMaxSizeHitList"): int,
                 Optional("anySigWhenPerfectNoOtherMatches"): Any("0", "1", 0, 1),
                 Optional("anyResSort_sf"): str,

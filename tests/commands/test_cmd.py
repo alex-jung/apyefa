@@ -21,55 +21,27 @@ class MockCommand(Command):
             required=False,
         )
 
-    def _get_response_schema(self):
-        return Schema(
-            {
-                Required("req_param"): str,
-                Optional("opt_param_1"): str,
-                Optional("opt_param_2"): str,
-            },
-            required=False,
-        )
-
 
 @pytest.fixture
 def mock_command() -> MockCommand:
-    return MockCommand("my_name", "my_macro")
+    return MockCommand("my_name", "my_format")
 
 
 def test_command_init(mock_command):
     assert mock_command._name == "my_name"
-    assert mock_command._macro == "my_macro"
-    assert (
-        len(mock_command._parameters) == 2
-    )  # outputFormat=rapidJSON and coordOutputFormas set as default
+    assert len(mock_command._parameters) == 1  # outputFormat=rapidJSON
 
 
 def test_command_to_str_default_params(mock_command):
-    assert (
-        str(mock_command)
-        == "my_name?commonMacro=my_macro&outputFormat=rapidJSON&coordOutputFormat=WGS84[dd.ddddd]"
-    )
-
-
-def test_command_validation_failed(mock_command):
-    mock_command._parameters = {
-        "outputFormat": "rapidJSON",
-        "opt1": "value1",
-        "opt2": "value2",
-        "opt3": "value3",
-    }
-
-    with pytest.raises(EfaParameterError):
-        mock_command.validate()
+    assert str(mock_command) == "my_name?outputFormat=my_format"
 
 
 @pytest.mark.parametrize(
     "params, expected",
     [
         ({}, ""),
-        ({"opt1": "value"}, "&opt1=value"),
-        ({"opt1": "value1", "opt2": "value2"}, "&opt1=value1&opt2=value2"),
+        ({"opt1": "value"}, "?opt1=value"),
+        ({"opt1": "value1", "opt2": "value2"}, "?opt1=value1&opt2=value2"),
     ],
 )
 def test_command_params_str(mock_command, params, expected):
@@ -91,20 +63,20 @@ def test_command_add_param_empty(mock_command, param, value):
 
 
 def test_command_add_param_success(mock_command):
-    assert len(mock_command._parameters) == 2
+    assert len(mock_command._parameters) == 1
 
     mock_command.add_param("valid_param", "value1")
 
-    assert len(mock_command._parameters) == 3
+    assert len(mock_command._parameters) == 2
 
 
 @pytest.mark.parametrize("value", [None, ""])
 def test_command_add_param_datetime_empty(mock_command, value):
-    assert len(mock_command._parameters) == 2
+    assert len(mock_command._parameters) == 1
 
     mock_command.add_param_datetime(value)
 
-    assert len(mock_command._parameters) == 2
+    assert len(mock_command._parameters) == 1
 
 
 @pytest.mark.parametrize("param, value", [("test_param", "test_value")])
