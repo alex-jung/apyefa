@@ -10,8 +10,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class CommandTrip(Command):
-    def __init__(self) -> None:
-        super().__init__("XML_TRIP_REQUEST2", "trip")
+    def __init__(self, format: str) -> None:
+        super().__init__("XML_TRIP_REQUEST2", format)
 
     def parse(self, data: dict):
         raise NotImplementedError
