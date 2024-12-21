@@ -1,5 +1,6 @@
 import logging
 from datetime import date, datetime
+from typing import Final
 
 import aiohttp
 
@@ -22,8 +23,8 @@ from apyefa.data_classes import (
 )
 from apyefa.exceptions import EfaConnectionError, EfaFormatNotSupported
 
-_LOGGER = logging.getLogger(__name__)
-QUERY_TIMEOUT = 10  # seconds
+_LOGGER: Final = logging.getLogger(__name__)
+QUERY_TIMEOUT: Final = 10  # seconds
 
 
 class EfaClient:
@@ -78,20 +79,22 @@ class EfaClient:
         limit: int = 30,
         search_nearbly_stops: bool = False,
     ) -> list[Location]:
-        """Find location(s) by provided `name`.
+        """
+        Asynchronously search for locations by name with optional filters and limits.
 
         Args:
-            name (str): Name or ID of location to search (case insensitive)
-            e.g. "Plärrer", "Nordostbanhof" or "de:09564:704"
-            filters (list[LocationFilter], optional): List of filters to apply for search. Defaults to empty.
-            limit (int, optional): Max size of returned list. Defaults to 30.
+            name (str): The name or ID of the location to search for.
+            filters (list[LocationFilter], optional): A list of filters to apply to the search. Defaults to an empty list.
+            limit (int, optional): The maximum number of locations to return. Defaults to 30.
+            search_nearbly_stops (bool, optional): Whether to include nearby stops in the search. Defaults to False.
 
         Returns:
-            list[Location]: List of location(s) returned by endpoint. List is sorted by match quality.
+            list[Location]: A list of locations matching the search criteria.
         """
         _LOGGER.info(f"Request location search by name/id: {name}")
         _LOGGER.debug(f"filters: {filters}")
         _LOGGER.debug(f"limit: {limit}")
+        _LOGGER.debug(f"search_nearbly_stops: {search_nearbly_stops}")
 
         command = CommandStopFinder(self._format)
 
@@ -112,26 +115,30 @@ class EfaClient:
         self,
         coord_x: float,
         coord_y: float,
+        *,
         format: CoordFormat = CoordFormat.WGS84,
         limit: int = 10,
         search_nearbly_stops: bool = False,
     ) -> Location:
-        """Find location(s) by provided `coordinates`.
+        """
+        Asynchronously fetches location information based on given coordinates.
 
         Args:
-            coord_x (float): X coordinate
-            coord_y (float): Y coordinate
-            format (CoordFormat, optional): Coordinate format. Defaults to CoordFormat.WGS84.
-            limit (int, optional): Max size of returned list. Defaults to 10.
+            coord_x (float): The X coordinate (longitude).
+            coord_y (float): The Y coordinate (latitude).
+            format (CoordFormat, optional): The coordinate format. Defaults to CoordFormat.WGS84.
+            limit (int, optional): The maximum number of locations to return. Defaults to 10.
+            search_nearbly_stops (bool, optional): Whether to search for nearby stops. Defaults to False.
 
         Returns:
-            Location: List of location(s) returned by endpoint. List is sorted by match quality.
+            Location: The location information based on the provided coordinates.
         """
         _LOGGER.info("Request location search by coordinates")
         _LOGGER.debug(f"coord_x: {coord_x}")
         _LOGGER.debug(f"coord_y: {coord_y}")
         _LOGGER.debug(f"format: {format}")
         _LOGGER.debug(f"limit: {limit}")
+        _LOGGER.debug(f"search_nearbly_stops: {search_nearbly_stops}")
 
         command = CommandStopFinder(self._format)
         command.add_param("locationServerActive", 1)
@@ -150,6 +157,7 @@ class EfaClient:
     async def departures_by_location(
         self,
         stop: Location | str,
+        *,
         limit=40,
         arg_date: str | datetime | date | None = None,
     ) -> list[Departure]:
@@ -173,22 +181,33 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def lines_by_name(self, line: str) -> list[Line]:
-        """Search lines by name. e.g. subway `U3` or bus `65`
+    async def lines_by_name(
+        self,
+        line: str,
+        *,
+        merge_directions: bool = False,
+        show_trains_explicit: bool = False,
+    ) -> list[Line]:
+        """
+        Asynchronously fetches lines by name.
 
         Args:
-            line (str): Line name to search
+            line (str): The name of the line to search for.
+            merge_directions (bool, optional): Whether to merge directions. Defaults to False.
+            show_trains_explicit (bool, optional): Whether to explicitly show trains. Defaults to False.
 
         Returns:
-            list[Transport]: List of lines
+            list[Line]: A list of Line objects matching the search criteria.
         """
         _LOGGER.info("Request lines by name")
         _LOGGER.debug(f"line:{line}")
 
         command = CommandServingLines(self._format)
-        command.add_param("lineName", line)
         command.add_param("mode", "line")
+        command.add_param("lineName", line)
         command.add_param("locationServerActive", 1)
+        command.add_param("mergeDir", merge_directions)
+        command.add_param("lsShowTrainsExplicit", show_trains_explicit)
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
 
         response = await self._run_query(self._build_url(command))
@@ -196,23 +215,31 @@ class EfaClient:
         return command.parse(response)
 
     async def lines_by_location(
-        self, location: str | Location, req_types: list[LineRequestType] = []
+        self,
+        location: str | Location,
+        *,
+        req_types: list[LineRequestType] = [],
+        merge_directions: bool = False,
+        show_trains_explicit: bool = False,
     ) -> list[Line]:
-        """Search for lines that pass `location`. Location can be location ID like `de:08111:6221` or a `Location` object
+        """
+        Fetches lines by location.
 
         Args:
-            location (str | Location): Location
-            req_types (list[LineRequestType], optional): List of types for the request. Defaults to empty.
-
-        Raises:
-            ValueError: Wrong location type provided e.g. LocationType.POI or LocationType.ADDRESS
+            location (str | Location): The location identifier or Location object.
+            req_types (list[LineRequestType], optional): List of request types for lines. Defaults to [].
+            merge_directions (bool, optional): Whether to merge directions. Defaults to False.
+            show_trains_explicit (bool, optional): Whether to explicitly show trains. Defaults to False.
 
         Returns:
-            list[Transport]: List of lines
+            list[Line]: A list of Line objects.
+
+        Raises:
+            ValueError: If the location is a Location object and its type is not STOP.
         """
         _LOGGER.info("Request lines by location")
         _LOGGER.debug(f"location:{location}")
-        _LOGGER.debug(f"filters :{req_types}")
+        _LOGGER.debug(f"req_types :{req_types}")
 
         if isinstance(location, Location):
             if location.loc_type != LocationType.STOP:
@@ -221,11 +248,14 @@ class EfaClient:
                 )
             location = location.id
 
-        command = CommandServingLines()
+        command = CommandServingLines(self._format)
         command.add_param("mode", "odv")
         command.add_param("locationServerActive", 1)
         command.add_param("type_sl", "stopID")
         command.add_param("name_sl", location)
+        command.add_param("mergeDir", merge_directions)
+        command.add_param("lsShowTrainsExplicit", show_trains_explicit)
+        command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
 
         if req_types:
             command.add_param("lineReqType", sum(req_types))

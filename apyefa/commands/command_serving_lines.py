@@ -9,19 +9,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class CommandServingLines(Command):
-    def __init__(self, mode: str, value: str) -> None:
-        super().__init__("XML_SERVINGLINES_REQUEST", "servingLines")
-
-        match mode:
-            case "odv":
-                self.add_param("type_sl", "stopID")
-                self.add_param("name_sl", value)
-            case "line":
-                self.add_param("lineName", value)
-            case _:
-                raise ValueError(f"Mode {mode} not supported for serving lines")
-
-        self.add_param("mode", mode)
+    def __init__(self, format: str) -> None:
+        super().__init__("XML_SERVINGLINES_REQUEST", format)
 
     def parse(self, data: dict) -> list[Line]:
         data = self._get_parser().parse(data)
@@ -44,6 +33,7 @@ class CommandServingLines(Command):
                 Required("coordOutputFormat", default="WGS84"): Any(
                     *[x.value for x in CoordFormat]
                 ),
+                Required("locationServerActive"): Any("0", "1", 0, 1),
                 Required("mode", default="line"): Any("odv", "line"),
                 # mode 'odv'
                 Optional("type_sl"): Any("stopID"),

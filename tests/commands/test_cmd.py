@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from voluptuous import Optional, Required, Schema
 
@@ -29,7 +31,7 @@ def mock_command() -> MockCommand:
 
 def test_command_init(mock_command):
     assert mock_command._name == "my_name"
-    assert len(mock_command._parameters) == 1  # outputFormat=rapidJSON
+    assert mock_command._parameters == {"outputFormat": "my_format"}
 
 
 def test_command_to_str_default_params(mock_command):
@@ -53,21 +55,28 @@ def test_command_params_str(mock_command, params, expected):
     "param, value", [(None, None), (None, "value"), ("param", None), ("", "")]
 )
 def test_command_add_param_empty(mock_command, param, value):
-    before = mock_command._parameters.copy()
-
     mock_command.add_param(param, value)
 
-    after = mock_command._parameters
-
-    assert before == after
+    assert mock_command._parameters == {"outputFormat": "my_format"}
 
 
 def test_command_add_param_success(mock_command):
-    assert len(mock_command._parameters) == 1
-
     mock_command.add_param("valid_param", "value1")
 
-    assert len(mock_command._parameters) == 2
+    assert mock_command._parameters == {
+        "outputFormat": "my_format",
+        "valid_param": "value1",
+    }
+
+
+@pytest.mark.parametrize("bool_value, expected_value", [(True, "1"), (False, "0")])
+def test_command_add_param_bool(mock_command, bool_value, expected_value):
+    mock_command.add_param("valid_param", bool_value)
+
+    assert mock_command._parameters == {
+        "outputFormat": "my_format",
+        "valid_param": expected_value,
+    }
 
 
 @pytest.mark.parametrize("value", [None, ""])
@@ -91,7 +100,7 @@ def test_command_add_param_datetime_exception(mock_command, date):
         mock_command.add_param_datetime(date)
 
 
-def test_command_add_param_datetime_datetime(mock_command):
+def test_command_add_param_datetime_str_datetime(mock_command):
     datetime = "20201212 10:41"
 
     assert mock_command._parameters.get("itdDate", None) is None
@@ -103,7 +112,7 @@ def test_command_add_param_datetime_datetime(mock_command):
     assert mock_command._parameters.get("itdTime", None) == "1041"
 
 
-def test_command_add_param_datetime_date(mock_command):
+def test_command_add_param_datetime_str_date(mock_command):
     date = "20201212"
 
     assert mock_command._parameters.get("itdDate", None) is None
@@ -115,7 +124,7 @@ def test_command_add_param_datetime_date(mock_command):
     assert mock_command._parameters.get("itdDate", None) == "20201212"
 
 
-def test_command_add_param_datetime_time(mock_command):
+def test_command_add_param_datetime_str_time(mock_command):
     time = "16:34"
 
     assert mock_command._parameters.get("itdDate", None) is None
@@ -125,3 +134,27 @@ def test_command_add_param_datetime_time(mock_command):
 
     assert mock_command._parameters.get("itdDate", None) is None
     assert mock_command._parameters.get("itdTime", None) == "1634"
+
+
+def test_command_add_param_datetime_datetime(mock_command):
+    dt = datetime(2020, 12, 12, 16, 34)
+
+    assert mock_command._parameters.get("itdDate", None) is None
+    assert mock_command._parameters.get("itdTime", None) is None
+
+    mock_command.add_param_datetime(dt)
+
+    assert mock_command._parameters.get("itdDate", None) == "20201212"
+    assert mock_command._parameters.get("itdTime", None) == "1634"
+
+
+def test_command_add_param_datetime_date(mock_command):
+    dt = datetime(2020, 12, 12, 16, 34).date()
+
+    assert mock_command._parameters.get("itdDate", None) is None
+    assert mock_command._parameters.get("itdTime", None) is None
+
+    mock_command.add_param_datetime(dt)
+
+    assert mock_command._parameters.get("itdDate", None) == "20201212"
+    assert mock_command._parameters.get("itdTime", None) is None
