@@ -15,14 +15,14 @@ class CommandServingLines(Command):
     def parse(self, data: dict) -> list[Line]:
         data = self._get_parser().parse(data)
 
-        transportations = data.get("lines", [])
+        lines = data.get("lines", [])
 
-        _LOGGER.info(f"{len(transportations)} transportation(s) found")
+        _LOGGER.info(f"{len(lines)} line(s) found")
 
         result = []
 
-        for t in transportations:
-            result.append(Line.from_dict(t))
+        for line in lines:
+            result.append(Line.from_dict(line))
 
         return result
 

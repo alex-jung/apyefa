@@ -88,6 +88,9 @@ class EfaClient:
             limit (int, optional): The maximum number of locations to return. Defaults to 30.
             search_nearbly_stops (bool, optional): Whether to include nearby stops in the search. Defaults to False.
 
+        Raises:
+            ValueError: If no name is provided.
+
         Returns:
             list[Location]: A list of locations matching the search criteria.
         """
@@ -95,6 +98,9 @@ class EfaClient:
         _LOGGER.debug(f"filters: {filters}")
         _LOGGER.debug(f"limit: {limit}")
         _LOGGER.debug(f"search_nearbly_stops: {search_nearbly_stops}")
+
+        if not name:
+            raise ValueError("No name provided")
 
         command = CommandStopFinder(self._format)
 
@@ -156,30 +162,60 @@ class EfaClient:
 
     async def departures_by_location(
         self,
-        stop: Location | str,
+        location: Location | str,
         *,
         limit=40,
         arg_date: str | datetime | date | None = None,
+        realtime: bool = True,
     ) -> list[Departure]:
-        _LOGGER.info(f"Request departures for stop {stop}")
+        """
+        Fetches departures for a given location.
+
+        Args:
+            location (Location | str): The location object or location ID as a string.
+            limit (int, optional): The maximum number of departures to return. Defaults to 40.
+            arg_date (str | datetime | date | None, optional): The date for which to fetch departures. Can be a string, datetime, date, or None. Defaults to None.
+            realtime (bool, optional): Whether to use real-time data. Defaults to True.
+
+        Returns:
+            list[Departure]: A list of Departure objects.
+
+        Raises:
+            ValueError: If no location is provided.
+        """
+        _LOGGER.info(f"Request departures for location {location}")
         _LOGGER.debug(f"limit: {limit}")
         _LOGGER.debug(f"date: {arg_date}")
 
-        if isinstance(stop, Location):
-            stop = stop.id
+        if not location:
+            raise ValueError("No location provided")
 
-        command = CommandDepartures(stop)
+        if isinstance(location, Location):
+            location = location.id
+
+        command = CommandDepartures(self._format)
 
         # add parameters
-        command.add_param("limit", limit)
-        command.add_param("name_dm", stop)
         command.add_param("locationServerActive", 1)
+        command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+        command.add_param("name_dm", location)
+        command.add_param("type_dm", "any")
+
+        if self._format == "rapidJSON":
+            command.add_param("mode", "direct")
+            command.add_param("useProxFootSearch", "0")
+        else:
+            command.add_param("mode", "any")
+
+        command.add_param("useAllStops", "1")
+        command.add_param("lsShowTrainsExplicit", "1")
+        command.add_param("useRealtime", realtime)
 
         command.add_param_datetime(arg_date)
 
         response = await self._run_query(self._build_url(command))
 
-        return command.parse(response)
+        return command.parse(response)[:limit]
 
     async def lines_by_name(
         self,
@@ -196,11 +232,17 @@ class EfaClient:
             merge_directions (bool, optional): Whether to merge directions. Defaults to False.
             show_trains_explicit (bool, optional): Whether to explicitly show trains. Defaults to False.
 
+        Raises:
+            ValueError: If no line is provided.
+
         Returns:
             list[Line]: A list of Line objects matching the search criteria.
         """
         _LOGGER.info("Request lines by name")
         _LOGGER.debug(f"line:{line}")
+
+        if not line:
+            raise ValueError("No line provided")
 
         command = CommandServingLines(self._format)
         command.add_param("mode", "line")
@@ -240,6 +282,9 @@ class EfaClient:
         _LOGGER.info("Request lines by location")
         _LOGGER.debug(f"location:{location}")
         _LOGGER.debug(f"req_types :{req_types}")
+
+        if not location:
+            raise ValueError("No location provided")
 
         if isinstance(location, Location):
             if location.loc_type != LocationType.STOP:

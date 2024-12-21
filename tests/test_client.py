@@ -48,7 +48,7 @@ class TestFunctionInfo:
 
 
 class TestFunctionLocationsByName:
-    @pytest.mark.parametrize("name", [None, "test", "test name"])
+    @pytest.mark.parametrize("name", ["test"])
     @patch.object(EfaClient, "_run_query", return_value="")
     async def test_default_parameters(self, _, test_async_client: EfaClient, name):
         with patch(
@@ -63,6 +63,10 @@ class TestFunctionLocationsByName:
         mock_add_param.assert_any_call("name_sf", name)
         mock_add_param.assert_any_call("coordOutputFormat", CoordFormat.WGS84.value)
         mock_add_param.assert_any_call("doNotSearchForStops_sf", True)
+
+    async def test_no_name(self, test_async_client: EfaClient):
+        with pytest.raises(ValueError):
+            await test_async_client.locations_by_name(None)
 
     @pytest.mark.parametrize("limit", [0, 1, 10])
     @patch.object(EfaClient, "_run_query", return_value="")
@@ -219,6 +223,10 @@ class TestFunctionLinesByName:
         mock_add_param.assert_any_call("lineName", "any name")
         mock_add_param.assert_any_call("locationServerActive", 1)
 
+    async def test_no_name(self, test_async_client: EfaClient):
+        with pytest.raises(ValueError):
+            await test_async_client.lines_by_name(None)
+
     @pytest.mark.parametrize("merge_dirs", [True, False])
     @patch.object(EfaClient, "_run_query", return_value="")
     async def test_merge_dirs(self, _, test_async_client: EfaClient, merge_dirs):
@@ -278,6 +286,10 @@ class TestFunctionLinesByLocation:
 
         mock_add_param.assert_any_call("name_sl", location.id)
 
+    async def test_no_location(self, test_async_client: EfaClient):
+        with pytest.raises(ValueError):
+            await test_async_client.lines_by_location(None)
+
     @pytest.mark.parametrize(
         "loc_type",
         [
@@ -333,3 +345,57 @@ class TestFunctionLinesByLocation:
             )
 
         mock_add_param.assert_any_call("lsShowTrainsExplicit", show_trains_explicit)
+
+
+class TestFunctionDeparturesByLocation:
+    @pytest.mark.parametrize("location", ["test"])
+    @patch.object(EfaClient, "_run_query", return_value="")
+    async def test_default_parameters(self, _, test_async_client: EfaClient, location):
+        with patch(
+            "apyefa.commands.command_departures.CommandDepartures.add_param"
+        ) as mock_add_param:
+
+            await test_async_client.departures_by_location(location)
+
+        mock_add_param.assert_any_call("outputFormat", "rapidJSON")
+        mock_add_param.assert_any_call("coordOutputFormat", CoordFormat.WGS84.value)
+        mock_add_param.assert_any_call("locationServerActive", 1)
+        mock_add_param.assert_any_call("name_dm", location)
+        mock_add_param.assert_any_call("mode", "direct")
+        mock_add_param.assert_any_call("useAllStops", "1")
+        mock_add_param.assert_any_call("lsShowTrainsExplicit", "1")
+        mock_add_param.assert_any_call("useProxFootSearch", "0")
+        mock_add_param.assert_any_call("useRealtime", True)
+
+    async def test_no_location(self, test_async_client: EfaClient):
+        with pytest.raises(ValueError):
+            await test_async_client.departures_by_location(None)
+
+    @patch.object(EfaClient, "_run_query", return_value="")
+    async def test_location_object(self, _, test_async_client: EfaClient):
+        with patch(
+            "apyefa.commands.command_departures.CommandDepartures.add_param"
+        ) as mock_add_param:
+            location = Mock(spec=Location)
+            location.id = "de:06412:1975"
+
+            await test_async_client.departures_by_location(location)
+
+        mock_add_param.assert_any_call("name_dm", location.id)
+
+    @pytest.mark.parametrize("format, mode", [("rapidJSON", "direct"), ("xml", "any")])
+    @patch.object(EfaClient, "_run_query", return_value="")
+    async def test_different_mode(self, _, test_async_client: EfaClient, format, mode):
+        with patch(
+            "apyefa.commands.command_departures.CommandDepartures.add_param"
+        ) as mock_add_param:
+            with patch(
+                "apyefa.commands.command_departures.CommandDepartures.parse"
+            ) as mock_parse:
+                mock_parse.return_value = ""
+
+                test_async_client._format = format
+
+                await test_async_client.departures_by_location("my_location")
+
+                mock_add_param.assert_any_call("mode", mode)

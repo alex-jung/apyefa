@@ -1,59 +1,31 @@
 from typing import Final
+from unittest.mock import patch
 
 import pytest
 
 from apyefa.commands.command_serving_lines import CommandServingLines
-from apyefa.exceptions import EfaParameterError
+from apyefa.commands.parsers.rapid_json_parser import RapidJsonParser
+from apyefa.exceptions import EfaParameterError, EfaParseError
 
 NAME: Final = "XML_SERVINGLINES_REQUEST"
-MACRO: Final = "servingLines"
-
-
-@pytest.fixture(scope="module")
-def query_url():
-    return f"https://efa.vgn.de/vgnExt_oeffi/{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&type_sl=stopID&name_sl=de:09564:1976&mode=odv"
 
 
 @pytest.fixture
 def command():
-    return CommandServingLines("odv", "my_name")
+    return CommandServingLines("rapidJSON")
 
 
-def test_init_name_and_macro(command):
+def test_init_name(command):
     assert command._name == NAME
-    assert command._macro == MACRO
 
 
-def test_init_params_mode_odv():
-    cmd = CommandServingLines("odv", "my_value")
-
+def test_init_params(command):
     expected_params = {
         "outputFormat": "rapidJSON",
-        "coordOutputFormat": "WGS84[dd.ddddd]",
-        "mode": "odv",
-        "name_sl": "my_value",
-        "type_sl": "stopID",
     }
 
-    assert cmd._parameters == expected_params
-
-
-def test_init_params_mode_line():
-    cmd = CommandServingLines("line", "my_value")
-
-    expected_params = {
-        "outputFormat": "rapidJSON",
-        "coordOutputFormat": "WGS84[dd.ddddd]",
-        "mode": "line",
-        "lineName": "my_value",
-    }
-
-    assert cmd._parameters == expected_params
-
-
-def test_init_params_mode_unknown():
-    with pytest.raises(ValueError):
-        CommandServingLines("invalid", "my_value")
+    assert command._parameters == expected_params
+    assert str(command) == f"{NAME}?outputFormat=rapidJSON"
 
 
 # test 'add_param()'
@@ -75,20 +47,47 @@ def test_add_param_success(command, param):
     command.add_param(param, "any_value")
 
 
-def test_parse_success(command, run_query):
-    transportations = command.parse(run_query)
-
-    assert len(transportations) > 0
-
-
 @pytest.mark.parametrize("param, value", [("param", "value"), ("name", "my_name")])
 def test_add_param_failed(command, param, value):
     with pytest.raises(EfaParameterError):
         command.add_param(param, value)
 
 
-# test 'to_str() and __str()__'
-def test_to_str(command):
-    expected_str = f"{NAME}?commonMacro={MACRO}&outputFormat=rapidJSON&coordOutputFormat=WGS84[dd.ddddd]&type_sl=stopID&name_sl=my_name&mode=odv"
+def test_parse_success(command):
+    data = {
+        "version": "version",
+        "lines": [
+            {
+                "id": "van:02067: :H:j24",
+                "name": "Bus 67",
+                "number": "67",
+                "description": "Nürnberg Frankenstr.-Fürth Hauptbahnhof",
+                "product": {"id": 3, "class": 5, "name": "Bus", "iconId": 3},
+                "destination": {
+                    "id": "80000931",
+                    "name": "Fürth Hauptbahnhof",
+                    "type": "stop",
+                },
+                "properties": {
+                    "tripCode": 0,
+                    "timetablePeriod": "Jahresfahrplan 2024",
+                    "validity": {"from": "2024-12-01", "to": "2025-06-14"},
+                    "lineDisplay": "LINE",
+                },
+            },
+        ],
+    }
 
-    assert command.to_str() == expected_str and str(command) == expected_str
+    with patch.object(RapidJsonParser, "parse") as parse_mock:
+        parse_mock.return_value = data
+        result = command.parse(data)
+
+    assert len(result) == 1
+
+
+def test_parse_failed(command):
+    with patch.object(RapidJsonParser, "parse") as parse_mock:
+        parse_mock.side_effect = EfaParseError
+
+        with pytest.raises(EfaParseError):
+            command.parse("this is a test response")

@@ -9,10 +9,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class CommandDepartures(Command):
-    def __init__(self, stop: str) -> None:
-        super().__init__("XML_DM_REQUEST", "dm")
-
-        self.add_param("name_dm", stop)
+    def __init__(self, format: str) -> None:
+        super().__init__("XML_DM_REQUEST", format)
 
     def parse(self, data: dict):
         data = self._get_parser().parse(data)
@@ -35,6 +33,7 @@ class CommandDepartures(Command):
                 Required("coordOutputFormat", default="WGS84"): Any(
                     *[x.value for x in CoordFormat]
                 ),
+                Required("locationServerActive"): Any("0", "1", 0, 1),
                 Required("name_dm"): str,
                 Required("type_dm", default="stop"): Any("any", "stop"),
                 Required("mode", default="direct"): Any("any", "direct"),

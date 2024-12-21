@@ -15,7 +15,7 @@ def command():
     yield CommandStopFinder("rapidJSON")
 
 
-def test_init_name_and_macro(command):
+def test_init_name(command):
     assert command._name == NAME
 
 
