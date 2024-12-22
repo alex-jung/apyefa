@@ -14,6 +14,8 @@ from apyefa.commands import (
 from apyefa.data_classes import (
     CoordFormat,
     Departure,
+    InfoPriority,
+    InfoType,
     Line,
     LineRequestType,
     Location,
@@ -22,6 +24,9 @@ from apyefa.data_classes import (
     SystemInfo,
 )
 from apyefa.exceptions import EfaConnectionError, EfaFormatNotSupported
+
+from .commands.command_add_info import CommandAdditionalInfo
+from .commands.command_line_list import CommandLineList
 
 _LOGGER: Final = logging.getLogger(__name__)
 QUERY_TIMEOUT: Final = 10  # seconds
@@ -156,6 +161,40 @@ class EfaClient:
         response = await self._run_query(self._build_url(command))
 
         return command.parse(response)[:limit]
+
+    async def lines(
+        self,
+        branch_code: str | None = None,
+        net_branch_code: str | None = None,
+        sub_network: str | None = None,
+        list_omc: str | None = None,
+        mixed_lines: bool = False,
+        merge_dir: bool = False,
+        req_type: list[LineRequestType] = [],
+    ) -> list[Location]:
+        _LOGGER.info("Request lines")
+
+        command = CommandLineList(self._format)
+        command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+
+        if branch_code:
+            command.add_param("lineListBranchCode", branch_code)
+        if net_branch_code:
+            command.add_param("lineListNetBranchCode", net_branch_code)
+        if sub_network:
+            command.add_param("lineListSubnetwork", sub_network)
+        if list_omc:
+            command.add_param("lineListOMC", list_omc)
+        if mixed_lines:
+            command.add_param("lineListMixedLines", mixed_lines)
+        if merge_dir:
+            command.add_param("mergeDir", merge_dir)
+        if req_type:
+            command.add_param("lineReqType", sum(req_type))
+
+        response = await self._run_query(self._build_url(command))
+
+        return command.parse(response)
 
     async def trip(self):
         raise NotImplementedError
@@ -309,8 +348,45 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def locations_by_line(self, line: str | Line) -> list[Location]:
-        raise NotImplementedError
+    async def additional_info_line(
+        self,
+        incl_history: bool = False,
+        only_valid: bool = False,
+        filter_date: date | str | None = None,
+        info_types: list[InfoType] = [],
+        prio: list[InfoPriority] = [],
+        mot_types: list[str] = [],
+        operatos: list[str] = [],
+        lines: list[str] = [],
+        networks: list[str] = [],
+        pn_lines: list[str] = [],
+        pn_line_directions: list[str] = [],
+        line: str | None = None,
+        passed_stops: int = 0,
+        id_stops: list[str] = [],
+        info_id: str | None = None,
+        show_line_list: bool = False,
+        show_stop_list: bool = False,
+        show_place_list: bool = False,
+    ):
+        _LOGGER.info("Request additional info")
+
+        command = CommandAdditionalInfo(self._format)
+        command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+
+        if not incl_history:
+            command.add_param("filterPublished", "1")
+        if only_valid:
+            command.add_param("filterValid", "1")
+        if filter_date:
+            command.add_param("filterDateValid", filter_date)
+
+        response = await self._run_query(self._build_url(command))
+
+        return command.parse(response)
+
+    async def additional_info_stop(self):
+        pass
 
     async def _run_query(self, query: str) -> str:
         _LOGGER.info(f"Run query {query}")
