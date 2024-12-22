@@ -6,9 +6,12 @@ import aiohttp
 
 from apyefa.commands import (
     Command,
+    CommandAdditionalInfo,
     CommandDepartures,
+    CommandLineList,
     CommandServingLines,
     CommandStopFinder,
+    CommandStopList,
     CommandSystemInfo,
 )
 from apyefa.data_classes import (
@@ -25,11 +28,8 @@ from apyefa.data_classes import (
 )
 from apyefa.exceptions import EfaConnectionError, EfaFormatNotSupported
 
-from .commands.command_add_info import CommandAdditionalInfo
-from .commands.command_line_list import CommandLineList
-
 _LOGGER: Final = logging.getLogger(__name__)
-QUERY_TIMEOUT: Final = 10  # seconds
+QUERY_TIMEOUT: Final = 30  # seconds
 
 
 class EfaClient:
@@ -162,17 +162,39 @@ class EfaClient:
 
         return command.parse(response)[:limit]
 
-    async def lines(
+    async def list_lines(
         self,
         branch_code: str | None = None,
         net_branch_code: str | None = None,
         sub_network: str | None = None,
         list_omc: str | None = None,
         mixed_lines: bool = False,
-        merge_dir: bool = False,
+        merge_dir: bool = True,
         req_type: list[LineRequestType] = [],
-    ) -> list[Location]:
+    ) -> list[Line]:
+        """
+        Asynchronously retrieves a list of lines based on the provided parameters.
+
+        Args:
+            branch_code (str | None): The branch code to filter lines.
+            net_branch_code (str | None): The Network and optionally the code of the branch separated by colon.
+            sub_network (str | None): The sub-network to filter lines.
+            list_omc (str | None): The OMC(Open Method of Coordination) list to filter lines.
+            mixed_lines (bool): Activates the search of composed services. Defaults to False.
+            merge_dir (bool): Merges the inbound and outbound service. Thus only inbound services are listed. Defaults to True.
+            req_type (list[LineRequestType]): The request types to filter lines. Defaults to an empty list.
+
+        Returns:
+            list[Line]: A list of Line objects representing the lines.
+        """
         _LOGGER.info("Request lines")
+        _LOGGER.debug(f"branch_code: {branch_code}")
+        _LOGGER.debug(f"net_branch_code: {net_branch_code}")
+        _LOGGER.debug(f"sub_network: {sub_network}")
+        _LOGGER.debug(f"list_omc: {list_omc}")
+        _LOGGER.debug(f"mixed_lines: {mixed_lines}")
+        _LOGGER.debug(f"merge_dir: {merge_dir}")
+        _LOGGER.debug(f"req_type: {req_type}")
 
         command = CommandLineList(self._format)
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
@@ -187,10 +209,70 @@ class EfaClient:
             command.add_param("lineListOMC", list_omc)
         if mixed_lines:
             command.add_param("lineListMixedLines", mixed_lines)
-        if merge_dir:
+        if not merge_dir:
             command.add_param("mergeDir", merge_dir)
         if req_type:
             command.add_param("lineReqType", sum(req_type))
+
+        response = await self._run_query(self._build_url(command))
+
+        return command.parse(response)
+
+    async def list_stops(
+        self,
+        omc: str | None = None,
+        place_id: str | None = None,
+        omc_place_id: str | None = None,
+        rtn: str | None = None,
+        sub_network: str | None = None,
+        from_stop: str | None = None,
+        to_stop: str | None = None,
+        serving_lines: bool = True,
+        serving_lines_mot_type: bool = True,
+        serving_lines_mot_types: bool = False,
+        tarif_zones: bool = True,
+    ) -> list[Location]:
+        """
+        Asynchronously retrieves a list of stops based on the provided parameters.
+
+        Args:
+            omc (str | None): Optional. The OMC (Operational Management Center) code.
+            place_id (str | None): Optional. ID of the place. Can be combined with `omc`.
+            omc_place_id (str | None): Optional. Combination of `omc` and `place_id`. OMC and ID of the place are separated by colon.
+            rtn (str | None): Optional. Only stops within the network given by parameter value.
+            sub_network (str | None): Optional. Only stops served by services from the network given by parameter value.
+            from_stop (str | None): Optional. Only stops with IDs within the intervall restricted by these parameters. Must be combined with `to_stop`.
+            to_stop (str | None): Optional. Only stops with IDs within the intervall restricted by these parameters. Must be combined with `from_stop`.
+            serving_lines (bool): Optional. Services of each stop. Default is True.
+            serving_lines_mot_type (bool): Optional. Mayor means of transport of each stop. The combination with `serving_lines_mot_types=True` is not possible. Default is True.
+            serving_lines_mot_types (bool): Optional. All means of transport of each stop. Separated by comma. The combination with `serving_lines_mot_type=True` is not possible. Default is False.
+            tarif_zones (bool): Optional. Tariff zone of each stop. Default is True.
+
+        Returns:
+            The parsed response from the command execution.
+        """
+        command = CommandStopList(self._format)
+        command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+
+        if omc:
+            command.add_param("stopListOMC", omc)
+        if place_id:
+            command.add_param("stopListPlaceId", place_id)
+        if omc_place_id:
+            command.add_param("stopListOMCPlaceId", omc_place_id)
+        if rtn:
+            command.add_param("rTN", rtn)
+        if sub_network:
+            command.add_param("stopListSubnetwork", sub_network)
+        if from_stop:
+            command.add_param("fromstop", from_stop)
+        if to_stop:
+            command.add_param("tostop", to_stop)
+
+        command.add_param("servingLines", serving_lines)
+        command.add_param("servingLinesMOTType", serving_lines_mot_type)
+        command.add_param("servingLinesMOTTypes", serving_lines_mot_types)
+        command.add_param("tariffZones", tarif_zones)
 
         response = await self._run_query(self._build_url(command))
 
