@@ -9,6 +9,7 @@ from apyefa.commands import (
     CommandAdditionalInfo,
     CommandDepartures,
     CommandLineList,
+    CommandLineStop,
     CommandServingLines,
     CommandStopFinder,
     CommandStopList,
@@ -169,8 +170,8 @@ class EfaClient:
         sub_network: str | None = None,
         list_omc: str | None = None,
         mixed_lines: bool = False,
-        merge_dir: bool = True,
-        req_type: list[LineRequestType] = [],
+        merge_directions: bool = True,
+        req_types: list[LineRequestType] = [],
     ) -> list[Line]:
         """
         Asynchronously retrieves a list of lines based on the provided parameters.
@@ -181,7 +182,7 @@ class EfaClient:
             sub_network (str | None): The sub-network to filter lines.
             list_omc (str | None): The OMC(Open Method of Coordination) list to filter lines.
             mixed_lines (bool): Activates the search of composed services. Defaults to False.
-            merge_dir (bool): Merges the inbound and outbound service. Thus only inbound services are listed. Defaults to True.
+            merge_directions (bool): Merges the inbound and outbound service. Thus only inbound services are listed. Defaults to True.
             req_type (list[LineRequestType]): The request types to filter lines. Defaults to an empty list.
 
         Returns:
@@ -193,8 +194,8 @@ class EfaClient:
         _LOGGER.debug(f"sub_network: {sub_network}")
         _LOGGER.debug(f"list_omc: {list_omc}")
         _LOGGER.debug(f"mixed_lines: {mixed_lines}")
-        _LOGGER.debug(f"merge_dir: {merge_dir}")
-        _LOGGER.debug(f"req_type: {req_type}")
+        _LOGGER.debug(f"merge_directions: {merge_directions}")
+        _LOGGER.debug(f"req_types: {req_types}")
 
         command = CommandLineList(self._format)
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
@@ -209,10 +210,10 @@ class EfaClient:
             command.add_param("lineListOMC", list_omc)
         if mixed_lines:
             command.add_param("lineListMixedLines", mixed_lines)
-        if not merge_dir:
-            command.add_param("mergeDir", merge_dir)
-        if req_type:
-            command.add_param("lineReqType", sum(req_type))
+        if not merge_directions:
+            command.add_param("mergeDir", merge_directions)
+        if req_types:
+            command.add_param("lineReqType", sum(req_types))
 
         response = await self._run_query(self._build_url(command))
 
@@ -425,6 +426,34 @@ class EfaClient:
 
         if req_types:
             command.add_param("lineReqType", sum(req_types))
+
+        response = await self._run_query(self._build_url(command))
+
+        return command.parse(response)
+
+    async def line_stops(
+        self, line_name: str, additional_info: bool = False
+    ) -> list[Location]:
+        """
+        Retrieve the stops for a given line.
+
+        Args:
+            line_name (str): The name of the line for which to retrieve stops.
+            additional_info (bool, optional): Whether to include additional stop information. Defaults to False.
+
+        Returns:
+            list[Location]: A list of Location objects representing the stops for the specified line.
+        """
+        _LOGGER.info("Request lise stops")
+        _LOGGER.debug(f"line_name: {line_name}")
+
+        if not line_name:
+            raise ValueError("No line name provided")
+
+        command = CommandLineStop(self._format)
+        command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+        command.add_param("line", line_name)
+        command.add_param("allStopInfo", additional_info)
 
         response = await self._run_query(self._build_url(command))
 
