@@ -182,9 +182,9 @@ SCHEMA_LOCATION: Final = vol.Schema(
 SCHEMA_TRANSPORTATION: Final = vol.Schema(
     {
         vol.Required("id"): str,
-        vol.Required("name"): str,
-        vol.Required("number"): str,
         vol.Required("product"): SCHEMA_PRODUCT,
+        vol.Optional("number"): str,
+        vol.Optional("name"): str,
         vol.Optional("description"): str,
         vol.Optional("operator"): SCHEMA_OPERATOR,
         vol.Optional("destination"): SCHEMA_LOCATION,
@@ -380,12 +380,40 @@ class Departure(_Base):
 
 
 @dataclass(frozen=True)
+class Operator(_Base):
+    id: str
+    code: str
+    name: str
+
+    _schema = SCHEMA_OPERATOR
+
+    @classmethod
+    def from_dict(cls, data: dict) -> Self | None:
+        if not data:
+            return None
+
+        if not isinstance(data, dict):
+            raise ValueError(f"Expected a dictionary, provided {type(data)}")
+
+        cls._schema(data)
+
+        return Operator(
+            data,
+            data.get("id"),
+            data.get("code"),
+            data.get("name"),
+        )
+
+
+@dataclass(frozen=True)
 class Line(_Base):
     id: str
     name: str
+    number: str
+    disassembled_name: str
     description: str
     product: TransportType
-    operator: str
+    operator: Operator | None
     destination: Location
     origin: Location
     properties: dict = field(default_factory={})
@@ -404,13 +432,12 @@ class Line(_Base):
         cls._schema(data)
 
         id = data.get("id")
-        name = data.get("number")
-        # disassembled_name = data.get("disassembledName")
-        # number = data.get("number")
+        name = data.get("name", None)
+        number = data.get("number", None)
+        disassembled_name = data.get("disassembledName", None)
         description = data.get("description")
         product = TransportType(data.get("product").get("class"))
-        # operator = data.get("operator", None).get("name", None)
-        operator = "None"
+        operator = Operator.from_dict(data.get("operator", None))
         destination = Location.from_dict(data.get("destination"))
         origin = Location.from_dict(data.get("origin"))
         properties = data.get("properties", {})
@@ -419,6 +446,8 @@ class Line(_Base):
             data,
             id,
             name,
+            number,
+            disassembled_name,
             description,
             product,
             operator,
