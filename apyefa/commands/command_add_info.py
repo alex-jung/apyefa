@@ -27,6 +27,10 @@ class CommandAdditionalInfo(Command):
                 Required("coordOutputFormat", default="WGS84"): Any(
                     *[x.value for x in CoordFormat]
                 ),
+                Optional("filterShowLineList", default="0"): Any("0", "1", 0, 1),
+                Optional("filterShowStopList", default="0"): Any("0", "1", 0, 1),
+                Optional("filterShowPlaceList", default="0"): Any("0", "1", 0, 1),
+                Optional("filterPublished", default="0"): Any("0", "1", 0, 1),
                 Optional("filterDateValid"): str,
                 Optional("filterDateValidDay"): str,
                 Optional("filterDateValidMonth"): str,
@@ -36,6 +40,7 @@ class CommandAdditionalInfo(Command):
                 Optional("filterValidIntervalStart"): str,
                 Optional("filterValidIntervalEnd"): str,
                 Optional("filterOMC"): str,
+                Optional("filterValid"): str,
                 Optional("filterOMC_PlaceID"): str,
                 Optional("filterLineNumberIntervalStart"): str,
                 Optional("filterLineNumberIntervalEnd"): str,

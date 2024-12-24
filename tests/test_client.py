@@ -399,3 +399,148 @@ class TestFunctionDeparturesByLocation:
                 await test_async_client.departures_by_location("my_location")
 
                 mock_add_param.assert_any_call("mode", mode)
+
+
+class TestFunctionLineStops:
+    @patch.object(EfaClient, "_run_query", return_value="")
+    async def test_default_parameters(self, _, test_async_client: EfaClient):
+        with patch(
+            "apyefa.commands.command_line_stop.CommandLineStop.add_param"
+        ) as mock_add_param:
+
+            await test_async_client.line_stops("my_line")
+
+        mock_add_param.assert_any_call("outputFormat", "rapidJSON")
+        mock_add_param.assert_any_call("coordOutputFormat", CoordFormat.WGS84.value)
+        mock_add_param.assert_any_call("line", "my_line")
+        mock_add_param.assert_any_call("allStopInfo", False)
+
+    async def test_no_line_name(self, test_async_client: EfaClient):
+        with pytest.raises(ValueError):
+            await test_async_client.line_stops(None)
+
+    @pytest.mark.parametrize("add_info", [True, False])
+    @patch.object(EfaClient, "_run_query", return_value="")
+    async def test_additional_info(self, _, test_async_client: EfaClient, add_info):
+        with patch(
+            "apyefa.commands.command_line_stop.CommandLineStop.add_param"
+        ) as mock_add_param:
+            with patch(
+                "apyefa.commands.command_line_stop.CommandLineStop.parse"
+            ) as mock_parse:
+                mock_parse.return_value = ""
+
+                test_async_client._format = format
+
+                await test_async_client.line_stops("my_line", additional_info=add_info)
+
+                mock_add_param.assert_any_call("allStopInfo", add_info)
+
+
+class TestFunctionListLines:
+    @patch.object(EfaClient, "_run_query", return_value="")
+    async def test_default_parameters(self, _, test_async_client: EfaClient):
+        with patch(
+            "apyefa.commands.command_line_list.CommandLineList.add_param"
+        ) as mock_add_param:
+
+            await test_async_client.list_lines()
+
+        mock_add_param.assert_any_call("outputFormat", "rapidJSON")
+        mock_add_param.assert_any_call("coordOutputFormat", CoordFormat.WGS84.value)
+
+    @pytest.mark.parametrize(
+        "arg_name, arg_value, param_name, param_value",
+        [
+            ("branch_code", "my_branch_code", "lineListBranchCode", "my_branch_code"),
+            (
+                "net_branch_code",
+                "my_net_branch_code",
+                "lineListNetBranchCode",
+                "my_net_branch_code",
+            ),
+            ("sub_network", "my_sub_network", "lineListSubnetwork", "my_sub_network"),
+            ("list_omc", "my_list_omc", "lineListOMC", "my_list_omc"),
+            ("mixed_lines", "my_mixed_lines", "lineListMixedLines", "my_mixed_lines"),
+            ("merge_directions", False, "mergeDir", False),
+        ],
+    )
+    @patch.object(EfaClient, "_run_query", return_value="")
+    async def test_arguments(
+        self,
+        _,
+        test_async_client: EfaClient,
+        arg_name,
+        arg_value,
+        param_name,
+        param_value,
+    ):
+        with patch(
+            "apyefa.commands.command_line_list.CommandLineList.add_param"
+        ) as mock_add_param:
+
+            await test_async_client.list_lines(**{f"{arg_name}": arg_value})
+
+        mock_add_param.assert_any_call(param_name, param_value)
+
+    @patch.object(EfaClient, "_run_query", return_value="")
+    async def test_req_types(self, _, test_async_client: EfaClient):
+        with patch(
+            "apyefa.commands.command_line_list.CommandLineList.add_param"
+        ) as mock_add_param:
+
+            await test_async_client.list_lines(req_types=[1, 2, 3])
+
+        mock_add_param.assert_any_call("lineReqType", sum([1, 2, 3]))
+
+
+class TestFunctionListStops:
+    @patch.object(EfaClient, "_run_query", return_value="")
+    async def test_default_parameters(self, _, test_async_client: EfaClient):
+        with patch(
+            "apyefa.commands.command_stop_list.CommandStopList.add_param"
+        ) as mock_add_param:
+
+            await test_async_client.list_stops()
+
+        mock_add_param.assert_any_call("outputFormat", "rapidJSON")
+        mock_add_param.assert_any_call("coordOutputFormat", CoordFormat.WGS84.value)
+        mock_add_param.assert_any_call("servingLines", True)
+        mock_add_param.assert_any_call("servingLinesMOTType", True)
+        mock_add_param.assert_any_call("servingLinesMOTTypes", False)
+        mock_add_param.assert_any_call("tariffZones", True)
+
+    @pytest.mark.parametrize(
+        "arg_name, arg_value, param_name, param_value",
+        [
+            ("omc", "my_omc", "stopListOMC", "my_omc"),
+            (
+                "place_id",
+                "place",
+                "stopListPlaceId",
+                "place",
+            ),
+            ("omc_place_id", "omc_pl_id", "stopListOMCPlaceId", "omc_pl_id"),
+            ("rtn", "my_rTN", "rTN", "my_rTN"),
+            ("sub_network", "my_sub_network", "stopListSubnetwork", "my_sub_network"),
+            ("from_stop", "my_from_stop", "fromstop", "my_from_stop"),
+            ("to_stop", "my_to_stop", "tostop", "my_to_stop"),
+        ],
+    )
+    @patch.object(EfaClient, "_run_query", return_value="")
+    async def test_arguments(
+        self,
+        _,
+        test_async_client: EfaClient,
+        arg_name,
+        arg_value,
+        param_name,
+        param_value,
+    ):
+        with patch(
+            "apyefa.commands.command_stop_list.CommandStopList.add_param"
+        ) as mock_add_param:
+
+            await test_async_client.list_stops(**{f"{arg_name}": arg_value})
+
+        mock_add_param.assert_any_call(param_name, param_value)
