@@ -34,7 +34,7 @@ pip install .
 |[lines_by_name()](#lines_by_name)                   |:white_check_mark:|:white_check_mark:|
 |[lines_by_location()](#lines_by_location)           |:white_check_mark:|:white_check_mark:|
 |[locations_by_line()](#locations_by_line)           |:x:               |:x:               |
-|[coords()](#coords)                                 |:x:               |:x:               |
+|[coords()](#coords)                                 |:white_check_mark:|:x:               |
 |[geo_object()](#geo_object)                         |:x:               |:x:               |
 |[trip_stop_time()](#trip_stop_time)                 |:x:               |:x:               |
 |[stop_seq_coord()](#stop_seq_coord)                 |:x:               |:x:               |
