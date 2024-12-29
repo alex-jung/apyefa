@@ -10,9 +10,9 @@ from apyefa.exceptions import EfaParameterError, EfaParseError
 NAME: Final = "XML_SYSTEMINFO_REQUEST"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def command():
-    yield CommandSystemInfo("rapidJSON")
+    return CommandSystemInfo("rapidJSON")
 
 
 # test constructor
@@ -30,13 +30,16 @@ def test_init_parameters(command):
     [("outputFormat", "rapidJSON")],
 )
 def test_add_param_success(command, param, value):
-    command.add_param(param, value)  # no exception occured
+    command.add_param(param, value)
+    command.validate_params()  # no exception occured
 
 
 @pytest.mark.parametrize("param, value", [("param", "value"), ("name_sf", "my_name")])
-def test_add_param_failed(command, param, value):
+def test_validate_failed(command, param, value):
+    command.add_param(param, value)
+
     with pytest.raises(EfaParameterError):
-        command.add_param(param, value)
+        command.validate_params()
 
 
 # test '__str()__'

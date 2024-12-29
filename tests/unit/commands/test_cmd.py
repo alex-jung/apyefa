@@ -92,6 +92,7 @@ def test_command_add_param_datetime_empty(mock_command, value):
 def test_command_add_param_missmatch_schema(mock_command, param, value):
     with pytest.raises(EfaParameterError):
         mock_command.add_param(param, value)
+        mock_command.validate_params()
 
 
 @pytest.mark.parametrize("date", [123, {"key": "value"}, "202422-16:34"])

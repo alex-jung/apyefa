@@ -101,12 +101,19 @@ def test_parse_failed(command):
             command.parse("this is a test response")
 
 
-@pytest.mark.parametrize("value", ["any", "coord"])
-def test_add_valid_param(value, command):
+@pytest.mark.parametrize("value", ["any", "stop"])
+def test_validate_success(value, command):
+    # add required params
+    command.add_param("name_dm", "dummy name")
+
+    # param to test
     command.add_param("type_dm", value)
+    command.validate_params()
 
 
 @pytest.mark.parametrize("invalid_param", ["dummy", "STOP"])
-def test_add_invalid_param(invalid_param, command):
+def test_validate_failed(invalid_param, command):
+    command.add_param(invalid_param, "valid_value")
+
     with pytest.raises(EfaParameterError):
-        command.add_param(invalid_param, "valid_value")
+        command.validate_params()

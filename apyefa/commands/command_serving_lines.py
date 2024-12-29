@@ -30,10 +30,10 @@ class CommandServingLines(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
-                Required("coordOutputFormat", default="WGS84"): Any(
+                Required("coordOutputFormat", default=CoordFormat.WGS84.value): Any(
                     *[x.value for x in CoordFormat]
                 ),
-                Required("locationServerActive"): Any("0", "1", 0, 1),
+                Required("locationServerActive", default="1"): Any("0", "1", 0, 1),
                 Required("mode", default="line"): Any("odv", "line"),
                 # mode 'odv'
                 Optional("type_sl"): Any("stopID"),

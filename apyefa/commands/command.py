@@ -2,7 +2,7 @@ import logging
 from abc import abstractmethod
 from datetime import date, datetime
 
-from voluptuous import Schema
+from voluptuous import MultipleInvalid, Schema
 
 from apyefa.commands.parsers.rapid_json_parser import RapidJsonParser
 from apyefa.exceptions import EfaFormatNotSupported, EfaParameterError
@@ -34,10 +34,10 @@ class Command:
         if not param or value is None:
             return
 
-        if param not in self._get_params_schema().schema.keys():
-            raise EfaParameterError(
-                f'Parameter "{param}" is now allowed for this command'
-            )
+        # if param not in self._get_params_schema().schema.keys():
+        #    raise EfaParameterError(
+        #        f'Parameter "{param}" is now allowed for this command'
+        #    )
 
         _LOGGER.debug(f'Add parameter "{param}" with value "{value}"')
 
@@ -81,6 +81,19 @@ class Command:
             self.add_param("itdTime", arg_date.replace(":", ""))
         else:
             raise ValueError(f'Date(time) "{arg_date}" provided in invalid format')
+
+    def validate_params(self):
+        """
+        Validates the parameters against the schema.
+
+        Raises:
+            EfaParameterError: If the parameters are invalid
+        """
+
+        try:
+            self._get_params_schema()(self._parameters)
+        except MultipleInvalid as e:
+            raise EfaParameterError(f"Invalid parameter(s) detected: {str(e)}")
 
     def __str__(self) -> str:
         return f"{self._name}" + self._get_params_as_str()
