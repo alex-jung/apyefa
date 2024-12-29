@@ -525,6 +525,7 @@ class EfaClient:
         left_upper: tuple[float, float],
         right_lower: tuple[float, float],
         filters: list[PointTypeFilter],
+        limit: int = 10,
     ) -> list[Location]:
         """
         Asynchronously request object coordinates within a bounding box.
@@ -533,6 +534,7 @@ class EfaClient:
             left_upper (tuple[float, float]): The coordinates of the left upper corner of the bounding box (latitude, longitude).
             right_lower (tuple[float, float]): The coordinates of the right lower corner of the bounding box (latitude, longitude).
             filters (list[PointTypeFilter]): A list of filters to apply to the points within the bounding box.
+            limit (int, optional): The maximum number of locations to return. Defaults to 10.
 
         Returns:
             list[Location]: A list of Location objects that fall within the specified bounding box and match the given filters.
@@ -554,6 +556,7 @@ class EfaClient:
             f"{right_lower[0]}:{right_lower[1]}:{CoordFormat.WGS84.value}",
         )
         command.add_param("inclFilter", True)
+        command.add_param("max", limit)
 
         for index, f in enumerate(filters):
             command.add_param(f"type_{index + 1}", f.value)
@@ -569,6 +572,7 @@ class EfaClient:
         coord: tuple[float, float],
         filters: list[PointTypeFilter],
         radius: list[int],
+        limit: int = 10,
     ) -> list[Location]:
         """
         Asynchronously request object coordinates by radius.
@@ -577,6 +581,7 @@ class EfaClient:
             coord (tuple[float, float]): A tuple containing the latitude and longitude of the coordinate.
             filters (list[PointTypeFilter]): A list of PointTypeFilter objects to filter the results.
             radius (list[int]): A list of radii corresponding to each filter.
+            limit (int, optional): The maximum number of locations to return. Defaults to 10.
 
         Returns:
             list[Location]: A list of Location objects that match the given filters and radius.
@@ -596,6 +601,7 @@ class EfaClient:
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
         command.add_param("inclFilter", True)
         command.add_param("coord", f"{coord[0]}:{coord[1]}:{CoordFormat.WGS84.value}")
+        command.add_param("max", limit)
 
         for index, f in enumerate(filters):
             command.add_param(f"type_{index + 1}", f.value)

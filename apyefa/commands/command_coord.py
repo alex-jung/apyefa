@@ -40,5 +40,6 @@ class CommandCoord(Command):
                 Optional(Match(r"^type_\d{1,}$")): str,
                 Optional(Match(r"^radius_\d{1,}$")): int,
                 Optional("coord"): str,
+                Optional("max"): int,
             },
         )
