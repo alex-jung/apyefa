@@ -54,8 +54,11 @@ class TestFunctionLocationsByName:
         with patch(
             "apyefa.commands.command_stop_finder.CommandStopFinder.add_param"
         ) as mock_add_param:
-
-            await test_async_client.locations_by_name(name)
+            with patch(
+                "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
+                return_value=True,
+            ):
+                await test_async_client.locations_by_name(name)
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
         mock_add_param.assert_any_call("locationServerActive", 1)
@@ -88,14 +91,18 @@ class TestFunctionLocationsByName:
         with patch(
             "apyefa.commands.command_stop_finder.CommandStopFinder.add_param"
         ) as mock_add_param:
+            with patch(
+                "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
+                return_value=True,
+            ):
 
-            await test_async_client.locations_by_name(
-                "any name", search_nearbly_stops=search_nearbly_stops
-            )
+                await test_async_client.locations_by_name(
+                    "any name", search_nearbly_stops=search_nearbly_stops
+                )
 
-            mock_add_param.assert_any_call(
-                "doNotSearchForStops_sf", not search_nearbly_stops
-            )
+                mock_add_param.assert_any_call(
+                    "doNotSearchForStops_sf", not search_nearbly_stops
+                )
 
     @pytest.mark.parametrize(
         "filters",
@@ -109,10 +116,14 @@ class TestFunctionLocationsByName:
         with patch(
             "apyefa.commands.command_stop_finder.CommandStopFinder.add_param"
         ) as mock_add_param:
+            with patch(
+                "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
+                return_value=True,
+            ):
 
-            await test_async_client.locations_by_name("any name", filters=filters)
+                await test_async_client.locations_by_name("any name", filters=filters)
 
-            mock_add_param.assert_called_with("anyObjFilter_sf", sum(filters))
+                mock_add_param.assert_called_with("anyObjFilter_sf", sum(filters))
 
 
 class TestFunctionLocationsByCoord:
@@ -122,8 +133,12 @@ class TestFunctionLocationsByCoord:
         with patch(
             "apyefa.commands.command_stop_finder.CommandStopFinder.add_param"
         ) as mock_add_param:
+            with patch(
+                "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
+                return_value=True,
+            ):
 
-            await test_async_client.location_by_coord(x, y)
+                await test_async_client.location_by_coord(x, y)
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
         mock_add_param.assert_any_call("locationServerActive", 1)
@@ -152,8 +167,12 @@ class TestFunctionLocationsByCoord:
         with patch(
             "apyefa.commands.command_stop_finder.CommandStopFinder.add_param"
         ) as mock_add_param:
+            with patch(
+                "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
+                return_value=True,
+            ):
 
-            await test_async_client.location_by_coord(0, 0, format=format)
+                await test_async_client.location_by_coord(0, 0, format=format)
 
             mock_add_param.assert_any_call("name_sf", f"0:0:{format}")
 
@@ -165,10 +184,14 @@ class TestFunctionLocationsByCoord:
         with patch(
             "apyefa.commands.command_stop_finder.CommandStopFinder.add_param"
         ) as mock_add_param:
+            with patch(
+                "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
+                return_value=True,
+            ):
 
-            await test_async_client.location_by_coord(
-                0, 0, search_nearbly_stops=search_nearbly_stops
-            )
+                await test_async_client.location_by_coord(
+                    0, 0, search_nearbly_stops=search_nearbly_stops
+                )
 
             mock_add_param.assert_any_call(
                 "doNotSearchForStops_sf", not search_nearbly_stops
@@ -354,8 +377,11 @@ class TestFunctionDeparturesByLocation:
         with patch(
             "apyefa.commands.command_departures.CommandDepartures.add_param"
         ) as mock_add_param:
-
-            await test_async_client.departures_by_location(location)
+            with patch(
+                "apyefa.commands.command_departures.CommandDepartures.validate_params",
+                return_value=True,
+            ):
+                await test_async_client.departures_by_location(location)
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
         mock_add_param.assert_any_call("coordOutputFormat", CoordFormat.WGS84.value)
@@ -376,10 +402,14 @@ class TestFunctionDeparturesByLocation:
         with patch(
             "apyefa.commands.command_departures.CommandDepartures.add_param"
         ) as mock_add_param:
-            location = Mock(spec=Location)
-            location.id = "de:06412:1975"
+            with patch(
+                "apyefa.commands.command_departures.CommandDepartures.validate_params",
+                return_value=True,
+            ):
+                location = Mock(spec=Location)
+                location.id = "de:06412:1975"
 
-            await test_async_client.departures_by_location(location)
+                await test_async_client.departures_by_location(location)
 
         mock_add_param.assert_any_call("name_dm", location.id)
 
@@ -390,15 +420,17 @@ class TestFunctionDeparturesByLocation:
             "apyefa.commands.command_departures.CommandDepartures.add_param"
         ) as mock_add_param:
             with patch(
-                "apyefa.commands.command_departures.CommandDepartures.parse"
-            ) as mock_parse:
-                mock_parse.return_value = ""
+                "apyefa.commands.command_departures.CommandDepartures.parse",
+                return_value="",
+            ):
+                with patch(
+                    "apyefa.commands.command_departures.CommandDepartures.validate_params"
+                ):
+                    test_async_client._format = format
 
-                test_async_client._format = format
+                    await test_async_client.departures_by_location("my_location")
 
-                await test_async_client.departures_by_location("my_location")
-
-                mock_add_param.assert_any_call("mode", mode)
+                    mock_add_param.assert_any_call("mode", mode)
 
 
 class TestFunctionLineStops:

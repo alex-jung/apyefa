@@ -12,7 +12,7 @@ NAME: Final = "XML_STOPFINDER_REQUEST"
 
 @pytest.fixture
 def command():
-    yield CommandStopFinder("rapidJSON")
+    return CommandStopFinder("rapidJSON")
 
 
 def test_init_name(command):
@@ -26,16 +26,22 @@ def test_init_params(command):
 # test 'add_param()'
 @pytest.mark.parametrize(
     "param, value",
-    [("outputFormat", "rapidJSON"), ("name_sf", "my_value"), ("type_sf", "my_type")],
+    [("outputFormat", "rapidJSON"), ("type_sf", "any")],
 )
-def test_add_param_success(command, param, value):
+def test_validate_success(command, param, value):
+    # add required parameter
+    command.add_param("name_sf", "dummy name")
+
     command.add_param(param, value)
+    command.validate_params()
 
 
 @pytest.mark.parametrize("param, value", [("param", "value"), ("name", "my_name")])
-def test_add_param_failed(command, param, value):
+def test_avalidate_failed(command, param, value):
+    command.add_param(param, value)
+
     with pytest.raises(EfaParameterError):
-        command.add_param(param, value)
+        command.validate_params()
 
 
 # test '__str()__'

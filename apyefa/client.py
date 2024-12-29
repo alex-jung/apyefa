@@ -25,9 +25,12 @@ from apyefa.data_classes import (
     Location,
     LocationFilter,
     LocationType,
+    PointTypeFilter,
     SystemInfo,
 )
 from apyefa.exceptions import EfaConnectionError, EfaFormatNotSupported
+
+from .commands.command_coord import CommandCoord
 
 _LOGGER: Final = logging.getLogger(__name__)
 QUERY_TIMEOUT: Final = 30  # seconds
@@ -72,6 +75,8 @@ class EfaClient:
 
         command = CommandSystemInfo(self._format)
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+
+        command.validate_params()
 
         response = await self._run_query(self._build_url(command))
 
@@ -119,6 +124,8 @@ class EfaClient:
         if filters:
             command.add_param("anyObjFilter_sf", sum(filters))
 
+        command.validate_params()
+
         response = await self._run_query(self._build_url(command))
 
         return command.parse(response)[:limit]
@@ -158,6 +165,8 @@ class EfaClient:
         command.add_param("name_sf", f"{coord_x}:{coord_y}:{format}")
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
         command.add_param("doNotSearchForStops_sf", not search_nearbly_stops)
+
+        command.validate_params()
 
         response = await self._run_query(self._build_url(command))
 
@@ -214,6 +223,8 @@ class EfaClient:
             command.add_param("mergeDir", merge_directions)
         if req_types:
             command.add_param("lineReqType", sum(req_types))
+
+        command.validate_params()
 
         response = await self._run_query(self._build_url(command))
 
@@ -275,6 +286,8 @@ class EfaClient:
         command.add_param("servingLinesMOTTypes", serving_lines_mot_types)
         command.add_param("tariffZones", tarif_zones)
 
+        command.validate_params()
+
         response = await self._run_query(self._build_url(command))
 
         return command.parse(response)
@@ -335,6 +348,8 @@ class EfaClient:
 
         command.add_param_datetime(arg_date)
 
+        command.validate_params()
+
         response = await self._run_query(self._build_url(command))
 
         return command.parse(response)[:limit]
@@ -373,6 +388,8 @@ class EfaClient:
         command.add_param("mergeDir", merge_directions)
         command.add_param("lsShowTrainsExplicit", show_trains_explicit)
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+
+        command.validate_params()
 
         response = await self._run_query(self._build_url(command))
 
@@ -427,6 +444,8 @@ class EfaClient:
         if req_types:
             command.add_param("lineReqType", sum(req_types))
 
+        command.validate_params()
+
         response = await self._run_query(self._build_url(command))
 
         return command.parse(response)
@@ -454,6 +473,8 @@ class EfaClient:
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
         command.add_param("line", line_name)
         command.add_param("allStopInfo", additional_info)
+
+        command.validate_params()
 
         response = await self._run_query(self._build_url(command))
 
@@ -498,6 +519,93 @@ class EfaClient:
 
     async def additional_info_stop(self):
         pass
+
+    async def coord_bounding_box(
+        self,
+        left_upper: tuple[float, float],
+        right_lower: tuple[float, float],
+        filters: list[PointTypeFilter],
+    ) -> list[Location]:
+        """
+        Asynchronously request object coordinates within a bounding box.
+
+        Args:
+            left_upper (tuple[float, float]): The coordinates of the left upper corner of the bounding box (latitude, longitude).
+            right_lower (tuple[float, float]): The coordinates of the right lower corner of the bounding box (latitude, longitude).
+            filters (list[PointTypeFilter]): A list of filters to apply to the points within the bounding box.
+
+        Returns:
+            list[Location]: A list of Location objects that fall within the specified bounding box and match the given filters.
+        """
+        _LOGGER.info("Request object(s) coordinates by bounding box")
+        _LOGGER.debug(f"left_upper: {left_upper}")
+        _LOGGER.debug(f"right_lower: {right_lower}")
+        _LOGGER.debug(f"filters: {filters}")
+
+        command = CommandCoord(self._format)
+        command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+        command.add_param("boundingBox", True)
+        command.add_param(
+            "boundingBoxLU",
+            f"{left_upper[0]}:{left_upper[1]}:{CoordFormat.WGS84.value}",
+        )
+        command.add_param(
+            "boundingBoxRL",
+            f"{right_lower[0]}:{right_lower[1]}:{CoordFormat.WGS84.value}",
+        )
+        command.add_param("inclFilter", True)
+
+        for index, f in enumerate(filters):
+            command.add_param(f"type_{index + 1}", f.value)
+
+        command.validate_params()
+
+        response = await self._run_query(self._build_url(command))
+
+        return command.parse(response)
+
+    async def coord_radial(
+        self,
+        coord: tuple[float, float],
+        filters: list[PointTypeFilter],
+        radius: list[int],
+    ) -> list[Location]:
+        """
+        Asynchronously request object coordinates by radius.
+
+        Args:
+            coord (tuple[float, float]): A tuple containing the latitude and longitude of the coordinate.
+            filters (list[PointTypeFilter]): A list of PointTypeFilter objects to filter the results.
+            radius (list[int]): A list of radii corresponding to each filter.
+
+        Returns:
+            list[Location]: A list of Location objects that match the given filters and radius.
+
+        Raises:
+            ValueError: If the length of radius and filters do not match.
+        """
+        _LOGGER.info("Request object(s) coordinates by radius")
+        _LOGGER.debug(f"coord: {coord}")
+        _LOGGER.debug(f"filters: {filters}")
+        _LOGGER.debug(f"radius: {radius}")
+
+        if len(radius) != len(filters):
+            raise ValueError("Radius and filters must have the same length")
+
+        command = CommandCoord(self._format)
+        command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+        command.add_param("inclFilter", True)
+        command.add_param("coord", f"{coord[0]}:{coord[1]}:{CoordFormat.WGS84.value}")
+
+        for index, f in enumerate(filters):
+            command.add_param(f"type_{index + 1}", f.value)
+            command.add_param(f"radius_{index + 1}", radius[index])
+
+        command.validate_params()
+
+        response = await self._run_query(self._build_url(command))
+
+        return command.parse(response)
 
     async def _run_query(self, query: str) -> str:
         _LOGGER.info(f"Run query {query}")

@@ -30,26 +30,28 @@ def test_init_params(command):
 
 # test 'add_param()'
 @pytest.mark.parametrize(
-    "param",
+    "param, value",
     [
-        "outputFormat",
-        "lineListBranchCode",
-        "lineListNetBranchCode",
-        "lineListSubnetwork",
-        "lineListOMC",
-        "lineListMixedLines",
-        "mergeDir",
-        "lineReqType",
+        ("lineListBranchCode", "branch_code"),
+        ("lineListNetBranchCode", "net_branch_code"),
+        ("lineListSubnetwork", "subnetwork"),
+        ("lineListOMC", "omc"),
+        ("lineListMixedLines", "1"),
+        ("mergeDir", "1"),
+        ("lineReqType", 1),
     ],
 )
-def test_add_param_success(command, param):
-    command.add_param(param, "any_value")
+def test_validate_success(command, param, value):
+    command.add_param(param, value)
+    command.validate_params()
 
 
 @pytest.mark.parametrize("param, value", [("param", "value"), ("name", "my_name")])
-def test_add_param_failed(command, param, value):
+def test_validate_failed(command, param, value):
+    command.add_param(param, value)
+
     with pytest.raises(EfaParameterError):
-        command.add_param(param, value)
+        command.validate_params()
 
 
 def test_parse_success(command):

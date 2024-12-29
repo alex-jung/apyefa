@@ -76,6 +76,19 @@ class LocationFilter(IntEnum):
     POST_CODES = 64
 
 
+class PointTypeFilter(StrEnum):
+    ANY = "ANY"
+    BUS_POINT = "BUS_POINT"
+    ENTRANCE = "ENTRANCE"
+    GIS_AREA = "GIS_AREA"
+    GIS_POINT = "GIS_POINT"
+    LINE = "LINE"
+    POI_AREA = "POI_AREA"
+    POI_POINT = "POI_POINT"
+    STOP = "STOP"
+    STREET = "STREET"
+
+
 class LineRequestType(IntEnum):
     NONE = 0
     DEPARTURE_MONITOR = 1

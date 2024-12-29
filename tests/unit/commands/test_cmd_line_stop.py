@@ -30,21 +30,23 @@ def test_init_params(command):
 
 # test 'add_param()'
 @pytest.mark.parametrize(
-    "param",
+    "param, value",
     [
-        "outputFormat",
-        "line",
-        "allStopInfo",
+        ("line", "my line"),
+        ("allStopInfo", 1),
     ],
 )
-def test_add_param_success(command, param):
-    command.add_param(param, "any_value")
+def test_validate_success(command, param, value):
+    command.add_param(param, value)
+    command.validate_params()
 
 
 @pytest.mark.parametrize("param, value", [("param", "value"), ("name", "my_name")])
-def test_add_param_failed(command, param, value):
+def test_validate_failed(command, param, value):
+    command.add_param(param, value)
+
     with pytest.raises(EfaParameterError):
-        command.add_param(param, value)
+        command.validate_params()
 
 
 def test_parse_success(command):

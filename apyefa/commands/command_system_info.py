@@ -23,7 +23,7 @@ class CommandSystemInfo(Command):
         return Schema(
             {
                 Required("outputFormat", default="rapidJSON"): Any("rapidJSON"),
-                Optional("coordOutputFormat", default="WGS84"): Any(
+                Optional("coordOutputFormat", default=CoordFormat.WGS84.value): Any(
                     *[x.value for x in CoordFormat]
                 ),
             }
