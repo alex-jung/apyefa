@@ -63,6 +63,8 @@ class TransportType(IntEnum):
     RAIL_REPLACEMENT_TRANSPORT = 17  # Schienenersatzverkehr
     SHUTTLE_TRAIN = 18  # Schuttlezug
     CITIZEN_BUS = 19  # Bürgerbus
+    UNKNOWN = 99  # TBD
+    FOOT_PATH = 100  # Fussweg
 
 
 class LocationFilter(IntEnum):
@@ -119,38 +121,12 @@ _SCHEMA_PROPERTIES = vol.Schema(
     extra=vol.ALLOW_EXTRA,
 )
 
-_SCHEMA_LINE_PROPERTIES: Final = vol.Schema(
-    {
-        vol.Required("globalId"): str,
-        vol.Required("isROP"): bool,
-        vol.Required("isSTT"): bool,
-        vol.Required("isTTB"): bool,
-        vol.Required("lineDisplay"): str,
-        vol.Required("timetablePeriod"): str,
-        vol.Required("tripCode"): int,
-        vol.Required("validity"): vol.Schema(
-            {
-                vol.Required("from"): vol.Date("%Y-%m-%d"),
-                vol.Required("to"): vol.Date("%Y-%m-%d"),
-            }
-        ),
-    }
-)
-
 _SCHEMA_PRODUCT = vol.Schema(
     {
-        vol.Optional("id"): int,
         vol.Required("class"): int,
+        vol.Optional("id"): int,
         vol.Optional("name"): str,
         vol.Optional("iconId"): int,
-    }
-)
-
-_SCHEMA_STOP = vol.Schema(
-    {
-        vol.Required("name"): str,
-        vol.Required("type"): IsLocationType,
-        vol.Optional("id"): str,
     }
 )
 
@@ -191,14 +167,16 @@ _SCHEMA_LOCATION: Final = vol.Schema(
         vol.Optional("assignedStops"): [vol.Self],
         vol.Optional("properties"): _SCHEMA_PROPERTIES,
         vol.Optional("matchQuality"): int,
+        vol.Optional("departureTimePlanned"): vol.Datetime("%Y-%m-%dT%H:%M:%S%z"),
+        vol.Optional("departureTimeEstimated"): vol.Datetime("%Y-%m-%dT%H:%M:%S%z"),
     },
     extra=vol.ALLOW_EXTRA,
 )
 
 _SCHEMA_TRANSPORTATION: Final = vol.Schema(
     {
-        vol.Required("id"): str,
         vol.Required("product"): _SCHEMA_PRODUCT,
+        vol.Optional("id"): str,
         vol.Optional("number"): str,
         vol.Optional("name"): str,
         vol.Optional("description"): str,
@@ -241,6 +219,33 @@ _SCHEMA_DEPARTURE: Final = vol.Schema(
         vol.Optional("hints"): list,
     },
     extra=vol.ALLOW_EXTRA,
+)
+
+_SCHEMA_JORNEY: Final = vol.Schema(
+    {
+        vol.Optional("rating"): int,
+        vol.Required("isAdditional"): vol.Boolean,
+        vol.Required("interchanges"): int,
+        vol.Required("legs"): list,
+    },
+    extra=vol.ALLOW_EXTRA,
+)
+
+_SCHEMA_LEG: Final = vol.Schema(
+    {
+        vol.Required("duration"): int,
+        vol.Required("origin"): _SCHEMA_LOCATION,
+        vol.Required("destination"): _SCHEMA_LOCATION,
+        vol.Required("transportation"): _SCHEMA_TRANSPORTATION,
+        vol.Optional("stopSequence"): list,
+        vol.Optional("infos"): list,
+        vol.Optional("distance"): int,
+        vol.Optional("hints"): list,
+        vol.Optional("properties"): dict,
+        vol.Optional("isRealtimeControlled"): vol.Boolean,
+        vol.Optional("realtimeStatus"): list,
+        vol.Optional("footPathInfo"): list,
+    }
 )
 
 
@@ -475,3 +480,78 @@ class Line(_Base):
             properties,
             coords,
         )
+
+
+@dataclass(frozen=True)
+class Leg(_Base):
+    duration: int
+    distance: int
+    origin: Location
+    destination: Location
+    transport: Line
+    stop_sequence: list[Location]
+    infos: list[dict] | None
+
+    _schema = _SCHEMA_LEG
+
+    @classmethod
+    def from_dict(cls, data: dict) -> Self | None:
+        if not data:
+            return None
+
+        if not isinstance(data, dict):
+            raise ValueError(f"Expected a dictionary, provided {type(data)}")
+
+        # validate data dictionary
+        cls._schema(data)
+
+        duration = data.get("duration", 0)
+        distance = data.get("distance", 0)
+        origin = Location.from_dict(data.get("origin"))
+        destination = Location.from_dict(data.get("destination"))
+        transport = Line.from_dict(data.get("transportation"))
+        stop_sequence = [Location.from_dict(x) for x in data.get("stopSequence", [])]
+        infos = data.get("infos")
+
+        return Leg(
+            data,
+            duration,
+            distance,
+            origin,
+            destination,
+            transport,
+            stop_sequence,
+            infos,
+        )
+
+
+@dataclass(frozen=True)
+class Jorney(_Base):
+    rating: int
+    is_additional: bool
+    interchanges: int
+    legs: list[Leg] = field(default_factory=[])
+
+    _schema = _SCHEMA_JORNEY
+
+    @classmethod
+    def from_dict(cls, data: dict) -> Self | None:
+        if not data:
+            return None
+
+        if not isinstance(data, dict):
+            raise ValueError(f"Expected a dictionary, provided {type(data)}")
+
+        # validate data dictionary
+        cls._schema(data)
+
+        rating = data.get("rating", 0)
+        is_additional = data.get("isAdditional", False)
+        interchanges = data.get("interchanges", 0)
+        legs = data.get("legs", [])
+        _legs = []
+
+        for leg in legs:
+            _legs.append(Leg.from_dict(leg))
+
+        return Jorney(data, rating, is_additional, interchanges, _legs)
