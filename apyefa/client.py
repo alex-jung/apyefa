@@ -31,8 +31,7 @@ from apyefa.data_classes import (
     SystemInfo,
 )
 from apyefa.exceptions import EfaConnectionError, EfaFormatNotSupported
-
-from .helpers import is_date
+from apyefa.helpers import is_date
 
 _LOGGER: Final = logging.getLogger(__name__)
 QUERY_TIMEOUT: Final = 30  # seconds
@@ -533,8 +532,8 @@ class EfaClient:
         Asynchronously request object coordinates within a bounding box.
 
         Args:
-            left_upper (tuple[float, float]): The coordinates of the left upper corner of the bounding box (latitude, longitude).
-            right_lower (tuple[float, float]): The coordinates of the right lower corner of the bounding box (latitude, longitude).
+            left_upper (tuple[float, float]): The coordinates(WGS84 format) of the left upper corner of the bounding box (latitude, longitude).
+            right_lower (tuple[float, float]): The coordinates(WGS84 format) of the right lower corner of the bounding box (latitude, longitude).
             filters (list[PointTypeFilter]): A list of filters to apply to the points within the bounding box.
             limit (int, optional): The maximum number of locations to return. Defaults to 10.
 
@@ -580,7 +579,7 @@ class EfaClient:
         Asynchronously request object coordinates by radius.
 
         Args:
-            coord (tuple[float, float]): A tuple containing the latitude and longitude of the coordinate.
+            coord (tuple[float, float]): A tuple containing the latitude and longitude of the coordinate(WGS84 format).
             filters (list[PointTypeFilter]): A list of PointTypeFilter objects to filter the results.
             radius (list[int]): A list of radii corresponding to each filter.
             limit (int, optional): The maximum number of locations to return. Defaults to 10.
@@ -628,8 +627,8 @@ class EfaClient:
         Args:
             line (str): The line parameter to be used in the query.
             filter_date (date | str | None, optional): The date to filter results by. Can be a date object or a string in the format 'YYYYMMDD'. Defaults to None.
-            left_upper (tuple[float, float] | None, optional): The left upper coordinate of the bounding box. Defaults to None.
-            right_lower (tuple[float, float] | None, optional): The right lower coordinate of the bounding box. Defaults to None.
+            left_upper (tuple[float, float] | None, optional): The left upper coordinate(WGS84 format) of the bounding box. Defaults to None.
+            right_lower (tuple[float, float] | None, optional): The right lower coordinate(WGS84 format) of the bounding box. Defaults to None.
 
         Returns:
             list[Line]: A list of Line objects that match the query parameters.
