@@ -16,12 +16,14 @@ from apyefa.commands import (
     CommandStopFinder,
     CommandStopList,
     CommandSystemInfo,
+    CommandTrip,
 )
 from apyefa.data_classes import (
     CoordFormat,
     Departure,
     InfoPriority,
     InfoType,
+    Jorney,
     Line,
     LineRequestType,
     Location,
@@ -293,8 +295,67 @@ class EfaClient:
 
         return command.parse(response)
 
-    async def trip(self):
-        raise NotImplementedError
+    async def trip(
+        self,
+        origin: Location | str,
+        destination: Location | str,
+        trip_departure: bool = True,
+        trip_datetime: str | datetime | date | None = None,
+    ) -> list[Jorney]:
+        """
+        Asynchronously calculates a trip between an origin and a destination.
+
+        Args:
+            origin (Location | str): The starting point of the trip, either as a Location object or a string identifier.
+            destination (Location | str): The endpoint of the trip, either as a Location object or a string identifier.
+            trip_departure (bool, optional): Indicates whether the trip is based on departure time (True) or arrival time (False). Defaults to True.
+            trip_datetime (str | datetime | date | None, optional): The date and time of the departure/arrival. Can be a string, datetime object, date object, or None. Defaults to None.
+
+        Returns:
+            list[Jorney]: A list of Jorney objects representing the calculated trip.
+
+        Raises:
+            ValueError: If the parameters are invalid or the trip cannot be calculated.
+        """
+        if isinstance(origin, Location):
+            origin = origin.id
+
+        if isinstance(destination, Location):
+            destination = destination.id
+
+        command = CommandTrip(self._format)
+        command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+        command.add_param("locationServerActive", True)
+        command.add_param("deleteAssignedStops_origin", True)
+        command.add_param("deleteAssignedStops_destination", True)
+        command.add_param("genC", False)
+        command.add_param("genP", False)
+        command.add_param("genMaps", False)
+        command.add_param("useRealtime", True)
+        command.add_param("useUT", True)
+        command.add_param("allInterchangesAsLegs", True)
+        command.add_param("calcOneDirection", True)
+        command.add_param("changeSpeed", "normal")
+        command.add_param("coordOutputDistance", True)
+
+        if trip_departure:
+            command.add_param("itdTripDateTimeDepArr", "dep")
+        else:
+            command.add_param("itdTripDateTimeDepArr", "arr")
+
+        if trip_datetime:
+            command.add_param_datetime(trip_datetime)
+
+        command.add_param("type_origin", "any")
+        command.add_param("name_origin", origin)
+        command.add_param("type_destination", "any")
+        command.add_param("name_destination", destination)
+
+        command.validate_params()
+
+        response = await self._run_query(self._build_url(command))
+
+        return command.parse(response)
 
     async def departures_by_location(
         self,
