@@ -52,7 +52,7 @@ class TransportType(IntEnum):
     REGIONAL_BUS = 6  # Regionalbus
     EXPRESS_BUS = 7  # Schnellbus
     CABLE_RAIL = 8  # Seilbahn
-    FERRY = 9  # Schief
+    FERRY = 9  # Schiff
     AST = 10  # Anruf-Sammel-Taxi
     SUSPENSION_RAIL = 11  # Schwebebahn
     AIRPLANE = 12  # Flugzeug
