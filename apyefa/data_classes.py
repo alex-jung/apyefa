@@ -105,11 +105,6 @@ class CoordFormat(StrEnum):
 
 
 # Validation schemas
-def IsLocationType(type: str):
-    if type not in [x.value for x in LocationFilter]:
-        raise ValueError
-
-
 _SCHEMA_PROPERTIES = vol.Schema(
     {
         vol.Optional("stopId"): str,
