@@ -34,11 +34,6 @@ class Command:
         if not param or value is None:
             return
 
-        # if param not in self._get_params_schema().schema.keys():
-        #    raise EfaParameterError(
-        #        f'Parameter "{param}" is now allowed for this command'
-        #    )
-
         _LOGGER.debug(f'Add parameter "{param}" with value "{value}"')
 
         if isinstance(value, bool):
