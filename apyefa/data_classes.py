@@ -108,7 +108,7 @@ def IsLocationType(type: str):
         raise ValueError
 
 
-SCHEMA_PROPERTIES = vol.Schema(
+_SCHEMA_PROPERTIES = vol.Schema(
     {
         vol.Optional("stopId"): str,
         vol.Optional("downloads"): list,
@@ -119,7 +119,7 @@ SCHEMA_PROPERTIES = vol.Schema(
     extra=vol.ALLOW_EXTRA,
 )
 
-SCHEMA_LINE_PROPERTIES: Final = vol.Schema(
+_SCHEMA_LINE_PROPERTIES: Final = vol.Schema(
     {
         vol.Required("globalId"): str,
         vol.Required("isROP"): bool,
@@ -137,16 +137,16 @@ SCHEMA_LINE_PROPERTIES: Final = vol.Schema(
     }
 )
 
-SCHEMA_PRODUCT = vol.Schema(
+_SCHEMA_PRODUCT = vol.Schema(
     {
-        vol.Required("id"): int,
+        vol.Optional("id"): int,
         vol.Required("class"): int,
-        vol.Required("name"): str,
+        vol.Optional("name"): str,
         vol.Optional("iconId"): int,
     }
 )
 
-SCHEMA_STOP = vol.Schema(
+_SCHEMA_STOP = vol.Schema(
     {
         vol.Required("name"): str,
         vol.Required("type"): IsLocationType,
@@ -154,7 +154,7 @@ SCHEMA_STOP = vol.Schema(
     }
 )
 
-SCHEMA_PARENT = vol.Schema(
+_SCHEMA_PARENT = vol.Schema(
     {
         vol.Required("name"): str,
         vol.Required("type"): str,
@@ -164,11 +164,11 @@ SCHEMA_PARENT = vol.Schema(
         vol.Optional("niveau"): int,
         vol.Optional("disassembledName"): str,
         vol.Optional("parent"): vol.Self,
-        vol.Optional("properties"): SCHEMA_PROPERTIES,
+        vol.Optional("properties"): _SCHEMA_PROPERTIES,
     }
 )
 
-SCHEMA_OPERATOR = vol.Schema(
+_SCHEMA_OPERATOR = vol.Schema(
     {
         vol.Required("id"): str,
         vol.Required("name"): str,
@@ -176,7 +176,7 @@ SCHEMA_OPERATOR = vol.Schema(
     }
 )
 
-SCHEMA_LOCATION: Final = vol.Schema(
+_SCHEMA_LOCATION: Final = vol.Schema(
     {
         vol.Required("name"): str,
         vol.Required("type"): vol.In([x.value for x in LocationType]),
@@ -187,31 +187,32 @@ SCHEMA_LOCATION: Final = vol.Schema(
         vol.Optional("niveau"): int,
         vol.Optional("isBest"): vol.Boolean,
         vol.Optional("productClasses"): list[vol.Range(min=0, max=10)],
-        vol.Optional("parent"): SCHEMA_PARENT,
+        vol.Optional("parent"): _SCHEMA_PARENT,
         vol.Optional("assignedStops"): [vol.Self],
-        vol.Optional("properties"): SCHEMA_PROPERTIES,
+        vol.Optional("properties"): _SCHEMA_PROPERTIES,
         vol.Optional("matchQuality"): int,
     },
     extra=vol.ALLOW_EXTRA,
 )
 
-SCHEMA_TRANSPORTATION: Final = vol.Schema(
+_SCHEMA_TRANSPORTATION: Final = vol.Schema(
     {
         vol.Required("id"): str,
-        vol.Required("product"): SCHEMA_PRODUCT,
+        vol.Required("product"): _SCHEMA_PRODUCT,
         vol.Optional("number"): str,
         vol.Optional("name"): str,
         vol.Optional("description"): str,
-        vol.Optional("operator"): SCHEMA_OPERATOR,
-        vol.Optional("destination"): SCHEMA_LOCATION,
-        vol.Optional("origin"): SCHEMA_LOCATION,
+        vol.Optional("operator"): _SCHEMA_OPERATOR,
+        vol.Optional("destination"): _SCHEMA_LOCATION,
+        vol.Optional("origin"): _SCHEMA_LOCATION,
         vol.Optional("properties"): dict,
         vol.Optional("disassembledName"): str,
+        vol.Optional("coord"): list,
     },
     extra=vol.ALLOW_EXTRA,
 )
 
-SCHEMA_SYSTEM_INFO: Final = vol.Schema(
+_SCHEMA_SYSTEM_INFO: Final = vol.Schema(
     {
         vol.Required("version"): str,
         vol.Required("ptKernel"): vol.Schema(
@@ -230,12 +231,12 @@ SCHEMA_SYSTEM_INFO: Final = vol.Schema(
     }
 )
 
-SCHEMA_DEPARTURE: Final = vol.Schema(
+_SCHEMA_DEPARTURE: Final = vol.Schema(
     {
-        vol.Required("location"): SCHEMA_LOCATION,
+        vol.Required("location"): _SCHEMA_LOCATION,
         vol.Required("departureTimePlanned"): vol.Datetime("%Y-%m-%dT%H:%M:%S%z"),
         vol.Optional("departureTimeEstimated"): vol.Datetime("%Y-%m-%dT%H:%M:%S%z"),
-        vol.Required("transportation"): SCHEMA_TRANSPORTATION,
+        vol.Required("transportation"): _SCHEMA_TRANSPORTATION,
         vol.Optional("infos"): list,
         vol.Optional("hints"): list,
     },
@@ -266,7 +267,7 @@ class SystemInfo(_Base):
     valid_from: date
     valid_to: date
 
-    _schema = SCHEMA_SYSTEM_INFO
+    _schema = _SCHEMA_SYSTEM_INFO
 
     @classmethod
     def from_dict(cls, data: dict) -> Self | None:
@@ -302,7 +303,7 @@ class Location(_Base):
     disassembled_name: str = field(repr=False, default="")
     match_quality: int = field(repr=False, default=0)
 
-    _schema = SCHEMA_LOCATION
+    _schema = _SCHEMA_LOCATION
 
     @classmethod
     def from_dict(cls, data: dict) -> Self | None:
@@ -354,7 +355,7 @@ class Departure(_Base):
     infos: list[dict] = field(default_factory=[])
     hints: list[dict] = field(default_factory=[])
 
-    _schema = SCHEMA_DEPARTURE
+    _schema = _SCHEMA_DEPARTURE
 
     @classmethod
     def from_dict(cls, data: dict) -> Self | None:
@@ -401,7 +402,7 @@ class Operator(_Base):
     code: str
     name: str
 
-    _schema = SCHEMA_OPERATOR
+    _schema = _SCHEMA_OPERATOR
 
     @classmethod
     def from_dict(cls, data: dict) -> Self | None:
@@ -433,8 +434,9 @@ class Line(_Base):
     destination: Location
     origin: Location
     properties: dict = field(default_factory={})
+    coords: list[float] = field(default_factory=[])
 
-    _schema = SCHEMA_TRANSPORTATION
+    _schema = _SCHEMA_TRANSPORTATION
 
     @classmethod
     def from_dict(cls, data: dict) -> Self | None:
@@ -457,6 +459,7 @@ class Line(_Base):
         destination = Location.from_dict(data.get("destination"))
         origin = Location.from_dict(data.get("origin"))
         properties = data.get("properties", {})
+        coords = data.get("coord", [])
 
         return Line(
             data,
@@ -470,4 +473,5 @@ class Line(_Base):
             destination,
             origin,
             properties,
+            coords,
         )
