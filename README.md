@@ -12,7 +12,12 @@ pip install apyefa
 # Restrictions
 Currently the package supports only endpoints using [RapidJSON](https://rapidjson.org/) format. To check whether the endpoint supports this format, please call:
 ``` bash
-To describe(!)
+curl <EFA API URL>/XML_SYSTEMINFO_REQUEST?outputFormat=rapidJSON
+e.g. curl https://bahnland-bayern.de/efa/XML_SYSTEMINFO_REQUEST?outputFormat=rapidJSON
+```
+If API's answer looks like this, endpoint supports rapidJSON:
+```
+{"version":"10.6.21.17","ptKernel":{"appVersion":"10.6.22.28 build 16.12.2024 11:14:57","dataFormat":"EFA10_06_01","dataBuild":"2024-12-31T00:54:55Z"},"validity":{"from":"2024-12-15","to":"2025-06-14"}}
 ```
 
 # Development setup
