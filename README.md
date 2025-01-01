@@ -52,15 +52,27 @@ pip install .
 ``` python
 import asyncio
 from apyefa import EfaClient
+from apyefa.data_classes import (
+    Location,
+    LocationFilter,
+)
 
 async def async_info(client: EfaClient):
     info = await client.info()
     print(info)
 
+async def async_location_by_name(client: EfaClient):
+    stops: list[Location] = await client.locations_by_name(
+        "Plärrer", filters=[LocationFilter.STOPS], limit=20
+    )
+    for s in stops:
+        print(s)    
+
 async def main():
     async with EfaClient("https://bahnland-bayern.de/efa/") as client:
         await asyncio.gather(
             async_info(client),
+            async_location_by_name(client),
         )
 
 if __name__ == "__main__":
