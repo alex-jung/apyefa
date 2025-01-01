@@ -6,7 +6,6 @@ import aiohttp
 
 from apyefa.commands import (
     Command,
-    CommandAdditionalInfo,
     CommandCoord,
     CommandDepartures,
     CommandGeoObject,
@@ -21,8 +20,6 @@ from apyefa.commands import (
 from apyefa.data_classes import (
     CoordFormat,
     Departure,
-    InfoPriority,
-    InfoType,
     Jorney,
     Line,
     LineRequestType,
@@ -541,46 +538,6 @@ class EfaClient:
         response = await self._run_query(self._build_url(command))
 
         return command.parse(response)
-
-    async def additional_info_line(
-        self,
-        incl_history: bool = False,
-        only_valid: bool = False,
-        filter_date: date | str | None = None,
-        info_types: list[InfoType] = [],
-        prio: list[InfoPriority] = [],
-        mot_types: list[str] = [],
-        operatos: list[str] = [],
-        lines: list[str] = [],
-        networks: list[str] = [],
-        pn_lines: list[str] = [],
-        pn_line_directions: list[str] = [],
-        line: str | None = None,
-        passed_stops: int = 0,
-        id_stops: list[str] = [],
-        info_id: str | None = None,
-        show_line_list: bool = False,
-        show_stop_list: bool = False,
-        show_place_list: bool = False,
-    ):
-        _LOGGER.info("Request additional info")
-
-        command = CommandAdditionalInfo(self._format)
-        command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
-
-        if not incl_history:
-            command.add_param("filterPublished", "1")
-        if only_valid:
-            command.add_param("filterValid", "1")
-        if filter_date:
-            command.add_param("filterDateValid", filter_date)
-
-        response = await self._run_query(self._build_url(command))
-
-        return command.parse(response)
-
-    async def additional_info_stop(self):
-        pass
 
     async def coord_bounding_box(
         self,
