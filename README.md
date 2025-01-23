@@ -35,7 +35,7 @@ pip install .
 |----------------------------------------------------|-----------|
 |[info()](https://github.com/alex-jung/apyefa/wiki/info)|Provides EFA endpoint system information|
 |[locations_by_name()](https://github.com/alex-jung/apyefa/wiki/locations_by_name)|Search for locations by name with optional filters and limits|
-|[location_by_coord()](https://github.com/alex-jung/apyefa/wiki/location_by_coord)|Search for location by it's coordinates|
+|[locations_by_coord()](https://github.com/alex-jung/apyefa/wiki/locations_by_coord)|Search for location by it's coordinates|
 |[list_lines()](https://github.com/alex-jung/apyefa/wiki/list_lines)|Retrieves a list of lines|
 |[list_stops()](https://github.com/alex-jung/apyefa/wiki/list_stops)|Retrieves a list of stops|
 |[trip()](https://github.com/alex-jung/apyefa/wiki/trip)|Calculates a trip between an origin and a destination locations|

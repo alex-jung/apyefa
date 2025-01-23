@@ -138,7 +138,7 @@ class TestFunctionLocationsByCoord:
                 return_value=True,
             ):
 
-                await test_async_client.location_by_coord(x, y)
+                await test_async_client.locations_by_coord(x, y)
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
         mock_add_param.assert_any_call("locationServerActive", 1)
@@ -154,7 +154,7 @@ class TestFunctionLocationsByCoord:
         ) as mock_parse:
             mock_parse.return_value = [x for x in range(limit * 2)]
 
-            result = await test_async_client.location_by_coord(0, 0, limit=limit)
+            result = await test_async_client.locations_by_coord(0, 0, limit=limit)
 
             assert len(result) == limit
 
@@ -172,7 +172,7 @@ class TestFunctionLocationsByCoord:
                 return_value=True,
             ):
 
-                await test_async_client.location_by_coord(0, 0, format=format)
+                await test_async_client.locations_by_coord(0, 0, format=format)
 
             mock_add_param.assert_any_call("name_sf", f"0:0:{format}")
 
@@ -189,7 +189,7 @@ class TestFunctionLocationsByCoord:
                 return_value=True,
             ):
 
-                await test_async_client.location_by_coord(
+                await test_async_client.locations_by_coord(
                     0, 0, search_nearbly_stops=search_nearbly_stops
                 )
 
