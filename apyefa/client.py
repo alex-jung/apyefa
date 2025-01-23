@@ -130,17 +130,17 @@ class EfaClient:
 
         return command.parse(response)[:limit]
 
-    async def location_by_coord(
+    async def locations_by_coord(
         self,
         coord_x: float,
         coord_y: float,
         *,
         format: CoordFormat = CoordFormat.WGS84,
-        limit: int = 10,
         search_nearbly_stops: bool = False,
+        limit: int = 10,
     ) -> list[Location]:
         """
-        Asynchronously fetches location information based on given coordinates.
+        Asynchronously fetches locations based on given coordinates.
 
         Args:
             coord_x (float): The X coordinate (longitude).
@@ -150,9 +150,9 @@ class EfaClient:
             search_nearbly_stops (bool, optional): Whether to search for nearby stops. Defaults to False.
 
         Returns:
-            Location: The location information based on the provided coordinates.
+            list[Location]: List of locations found based on the provided coordinates.
         """
-        _LOGGER.info("Request location search by coordinates")
+        _LOGGER.info("Request locations search by coordinates")
         _LOGGER.debug(f"coord_x: {coord_x}")
         _LOGGER.debug(f"coord_y: {coord_y}")
         _LOGGER.debug(f"format: {format}")
