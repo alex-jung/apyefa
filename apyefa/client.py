@@ -138,7 +138,7 @@ class EfaClient:
         format: CoordFormat = CoordFormat.WGS84,
         limit: int = 10,
         search_nearbly_stops: bool = False,
-    ) -> Location:
+    ) -> list[Location]:
         """
         Asynchronously fetches location information based on given coordinates.
 
