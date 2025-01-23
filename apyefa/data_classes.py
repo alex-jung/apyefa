@@ -240,7 +240,8 @@ _SCHEMA_LEG: Final = vol.Schema(
         vol.Optional("isRealtimeControlled"): vol.Boolean,
         vol.Optional("realtimeStatus"): list,
         vol.Optional("footPathInfo"): list,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 
