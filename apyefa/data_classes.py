@@ -122,7 +122,8 @@ _SCHEMA_PRODUCT = vol.Schema(
         vol.Optional("id"): int,
         vol.Optional("name"): str,
         vol.Optional("iconId"): int,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 _SCHEMA_PARENT = vol.Schema(
@@ -136,7 +137,8 @@ _SCHEMA_PARENT = vol.Schema(
         vol.Optional("disassembledName"): str,
         vol.Optional("parent"): vol.Self,
         vol.Optional("properties"): _SCHEMA_PROPERTIES,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 _SCHEMA_OPERATOR = vol.Schema(
@@ -144,7 +146,8 @@ _SCHEMA_OPERATOR = vol.Schema(
         vol.Required("id"): str,
         vol.Required("name"): str,
         vol.Optional("code"): str,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 _SCHEMA_LOCATION: Final = vol.Schema(
@@ -201,7 +204,8 @@ _SCHEMA_SYSTEM_INFO: Final = vol.Schema(
                 vol.Required("to"): vol.Date("%Y-%m-%d"),
             }
         ),
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 _SCHEMA_DEPARTURE: Final = vol.Schema(
