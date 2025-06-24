@@ -350,6 +350,7 @@ class Location(_Base):
 @dataclass(frozen=True)
 class Departure(_Base):
     location: Location = field(repr=False)
+    line_id: str
     line_name: str
     route: str
     origin: Location
@@ -380,6 +381,7 @@ class Departure(_Base):
         hints = data.get("hints")
 
         line = Line.from_dict(data.get("transportation"))
+        line_id = line.id
         line_name = line.name
         transport = line.product
         origin = line.origin
@@ -389,6 +391,7 @@ class Departure(_Base):
         return Departure(
             data,
             location,
+            line_id,
             line_name,
             route,
             origin,
