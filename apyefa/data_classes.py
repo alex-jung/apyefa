@@ -63,6 +63,7 @@ class TransportType(IntEnum):
     RAIL_REPLACEMENT_TRANSPORT = 17  # Schienenersatzverkehr
     SHUTTLE_TRAIN = 18  # Schuttlezug
     CITIZEN_BUS = 19  # Bürgerbus
+    UNKNOWN_0 = 20  # TBD
     UNKNOWN = 99  # TBD
     FOOT_PATH = 100  # Fussweg
 
