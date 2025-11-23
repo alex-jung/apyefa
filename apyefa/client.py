@@ -461,6 +461,7 @@ class EfaClient:
         req_types: list[LineRequestType] = [],
         merge_directions: bool = False,
         show_trains_explicit: bool = False,
+        without_trains: bool = False,
     ) -> list[Line]:
         """
         Fetches lines by location.
@@ -470,6 +471,7 @@ class EfaClient:
             req_types (list[LineRequestType], optional): List of request types for lines. Defaults to [].
             merge_directions (bool, optional): Whether to merge directions. Defaults to False.
             show_trains_explicit (bool, optional): Whether to explicitly show trains. Defaults to False.
+            without_trains (bool, optional): Whether to exclude trains. Defaults to False.
 
         Returns:
             list[Line]: A list of Line objects.
@@ -499,6 +501,7 @@ class EfaClient:
         command.add_param("mergeDir", merge_directions)
         command.add_param("lsShowTrainsExplicit", show_trains_explicit)
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
+        command.add_param("withoutTrains", without_trains)
 
         if req_types:
             command.add_param("lineReqType", sum(req_types))
@@ -709,4 +712,5 @@ class EfaClient:
                 )
 
     def _build_url(self, cmd: Command):
+        print(self._base_url + str(cmd))
         return self._base_url + str(cmd)

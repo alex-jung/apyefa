@@ -46,6 +46,9 @@ class CommandServingLines(Command):
                 Optional("mergeDir"): Any("0", "1", 0, 1),
                 Optional("lsShowTrainsExplicit"): Any("0", "1", 0, 1),
                 Optional("line"): str,
+                Optional("withoutTrains"): Any(
+                    "0", "1", 0, 1, "true", "false", True, False
+                ),
                 # Optional("doNotSearchForStops_sf"): Any("0", "1", 0, 1),
                 # Optional("anyObjFilter_origin"): Range(
                 #    min=0, max=sum([x.value for x in StopFilter])
