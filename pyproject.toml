@@ -23,8 +23,8 @@ dependencies = [
     "tzdata>=2024.2"
 ]
 
-[project.optional-dependencies]
-tests = [
+[dependency-groups]
+dev = [
   'coverage>=5.0.3',
   'pytest-cov',
   'pytest',
@@ -40,6 +40,12 @@ addopts = "-ra -q"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = [
     "tests"
+]
+
+[tool.coverage.run]
+source = ["apyefa"]
+omit = [
+    "tests/*",
 ]
 
 [tool.coverage.report]
