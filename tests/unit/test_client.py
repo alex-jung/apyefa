@@ -95,7 +95,6 @@ class TestFunctionLocationsByName:
                 "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
                 return_value=True,
             ):
-
                 await test_async_client.locations_by_name(
                     "any name", search_nearbly_stops=search_nearbly_stops
                 )
@@ -120,7 +119,6 @@ class TestFunctionLocationsByName:
                 "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
                 return_value=True,
             ):
-
                 await test_async_client.locations_by_name("any name", filters=filters)
 
                 mock_add_param.assert_called_with("anyObjFilter_sf", sum(filters))
@@ -137,7 +135,6 @@ class TestFunctionLocationsByCoord:
                 "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
                 return_value=True,
             ):
-
                 await test_async_client.locations_by_coord(x, y)
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
@@ -171,7 +168,6 @@ class TestFunctionLocationsByCoord:
                 "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
                 return_value=True,
             ):
-
                 await test_async_client.locations_by_coord(0, 0, format=format)
 
             mock_add_param.assert_any_call("name_sf", f"0:0:{format}")
@@ -188,7 +184,6 @@ class TestFunctionLocationsByCoord:
                 "apyefa.commands.command_stop_finder.CommandStopFinder.validate_params",
                 return_value=True,
             ):
-
                 await test_async_client.locations_by_coord(
                     0, 0, search_nearbly_stops=search_nearbly_stops
                 )
@@ -237,7 +232,6 @@ class TestFunctionLinesByName:
         with patch(
             "apyefa.commands.command_serving_lines.CommandServingLines.add_param"
         ) as mock_add_param:
-
             await test_async_client.lines_by_name("any name")
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
@@ -256,7 +250,6 @@ class TestFunctionLinesByName:
         with patch(
             "apyefa.commands.command_serving_lines.CommandServingLines.add_param"
         ) as mock_add_param:
-
             await test_async_client.lines_by_name(
                 "any name", merge_directions=merge_dirs
             )
@@ -271,7 +264,6 @@ class TestFunctionLinesByName:
         with patch(
             "apyefa.commands.command_serving_lines.CommandServingLines.add_param"
         ) as mock_add_param:
-
             await test_async_client.lines_by_name(
                 "any name", show_trains_explicit=show_trains_explicit
             )
@@ -285,7 +277,6 @@ class TestFunctionLinesByLocation:
         with patch(
             "apyefa.commands.command_serving_lines.CommandServingLines.add_param"
         ) as mock_add_param:
-
             await test_async_client.lines_by_location("any location")
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
@@ -336,7 +327,6 @@ class TestFunctionLinesByLocation:
         with patch(
             "apyefa.commands.command_serving_lines.CommandServingLines.add_param"
         ) as mock_add_param:
-
             await test_async_client.lines_by_location("any name", req_types=[1, 2, 3])
 
         mock_add_param.assert_any_call("lineReqType", sum([1, 2, 3]))
@@ -347,7 +337,6 @@ class TestFunctionLinesByLocation:
         with patch(
             "apyefa.commands.command_serving_lines.CommandServingLines.add_param"
         ) as mock_add_param:
-
             await test_async_client.lines_by_location(
                 "any name", merge_directions=merge_dirs
             )
@@ -362,7 +351,6 @@ class TestFunctionLinesByLocation:
         with patch(
             "apyefa.commands.command_serving_lines.CommandServingLines.add_param"
         ) as mock_add_param:
-
             await test_async_client.lines_by_location(
                 "any name", show_trains_explicit=show_trains_explicit
             )
@@ -439,7 +427,6 @@ class TestFunctionLineStops:
         with patch(
             "apyefa.commands.command_line_stop.CommandLineStop.add_param"
         ) as mock_add_param:
-
             await test_async_client.line_stops("my_line")
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
@@ -475,7 +462,6 @@ class TestFunctionListLines:
         with patch(
             "apyefa.commands.command_line_list.CommandLineList.add_param"
         ) as mock_add_param:
-
             await test_async_client.list_lines()
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
@@ -510,7 +496,6 @@ class TestFunctionListLines:
         with patch(
             "apyefa.commands.command_line_list.CommandLineList.add_param"
         ) as mock_add_param:
-
             await test_async_client.list_lines(**{f"{arg_name}": arg_value})
 
         mock_add_param.assert_any_call(param_name, param_value)
@@ -520,7 +505,6 @@ class TestFunctionListLines:
         with patch(
             "apyefa.commands.command_line_list.CommandLineList.add_param"
         ) as mock_add_param:
-
             await test_async_client.list_lines(req_types=[1, 2, 3])
 
         mock_add_param.assert_any_call("lineReqType", sum([1, 2, 3]))
@@ -532,7 +516,6 @@ class TestFunctionListStops:
         with patch(
             "apyefa.commands.command_stop_list.CommandStopList.add_param"
         ) as mock_add_param:
-
             await test_async_client.list_stops()
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
@@ -572,7 +555,6 @@ class TestFunctionListStops:
         with patch(
             "apyefa.commands.command_stop_list.CommandStopList.add_param"
         ) as mock_add_param:
-
             await test_async_client.list_stops(**{f"{arg_name}": arg_value})
 
         mock_add_param.assert_any_call(param_name, param_value)
