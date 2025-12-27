@@ -4,11 +4,7 @@ FROM python:${PYTHON_VERSION}-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update
 
 RUN pip install --no-cache-dir uv
 

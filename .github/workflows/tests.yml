@@ -41,4 +41,4 @@ jobs:
 
     - name: Test with pytest
       run: |
-        docker run --rm apyefa:${{ matrix.python-version }} uv run pytest --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+        docker run --rm apyefa:${{ matrix.python-version }} uv run pytest .
