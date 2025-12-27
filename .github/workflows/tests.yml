@@ -33,7 +33,7 @@ jobs:
           -t apyefa:${{ matrix.python-version }} -f .devcontainer/Dockerfile .
 
     - name: Lint code with Ruff
-      run: docker run --rm apyefa:${{ matrix.python-version }} uv run ruff check --output-format=github .
+      run: docker run --rm apyefa:${{ matrix.python-version }} uv run ruff check .
 
     - name: Check code formatting with Ruff
       run: docker run --rm apyefa:${{ matrix.python-version }} uv run ruff format --diff .
@@ -42,17 +42,3 @@ jobs:
     - name: Test with pytest
       run: |
         docker run --rm apyefa:${{ matrix.python-version }} uv run pytest --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.xml
-
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@v5
-      with:
-        name: pytest-results-${{ matrix.python-version }}
-        path: junit/test-results-${{ matrix.python-version }}.xml
-      if: ${{ always() }}
-
-    - name: Publish Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      if: always()
-      with:
-        files: |
-          junit/**/*.xml
