@@ -8,8 +8,6 @@
     {
         "source.organizeImports": "always",
     },
-    "editor.defaultFormatter": "ms-python.black-formatter",
-    "notebook.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
     "[json]": {
         "editor.defaultFormatter": "vscode.json-language-features"

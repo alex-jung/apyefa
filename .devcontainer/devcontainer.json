@@ -1,7 +1,8 @@
 {
     "name": "Python + uv",
     "build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile",
+        "context": ".."
     },
 
     "customizations": {
@@ -15,6 +16,5 @@
     },
 
     "postCreateCommand": "uv sync --all-groups",
-
     "remoteUser": "root"
 }
