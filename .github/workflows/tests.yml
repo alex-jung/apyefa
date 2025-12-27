@@ -30,7 +30,7 @@ jobs:
       run: |
         docker build \
           --build-arg PYTHON_VERSION=${{ matrix.python-version }} \
-          -t apyefa:${{ matrix.python-version }} .devcontainer/Dockerfile
+          -t apyefa:${{ matrix.python-version }} -f .devcontainer/Dockerfile .
 
     - name: Lint code with Ruff
       run: docker run --rm apyefa:${{ matrix.python-version }} uv run ruff check --output-format=github .
