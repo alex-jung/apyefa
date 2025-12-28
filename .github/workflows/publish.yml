@@ -27,7 +27,7 @@ jobs:
       - name: Build package
         run: |
           docker run --rm \
-            -v $PWD:/app \
+            -v $PWD/dist:/app/dist \
             apyefa:release \
             uv run python -m build
 
