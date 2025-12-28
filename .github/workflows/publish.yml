@@ -1,18 +1,14 @@
 name: Build and publish to PyPI
 
-# just for tests
-on:
+on: 
   push:
-    branches: ["**"]
-
-# on: 
-#   push:
-#     tags:
-#        - "v*"
+    tags:
+       - "v*\.dev"
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: testpypi
 
     steps:
       - uses: actions/checkout@v6
@@ -31,12 +27,11 @@ jobs:
             apyefa:release \
             uv run python -m build
 
-      - name: List directory
+      - name: Publish to TestPyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: |
-            ls -la
-      
-      - name: Upload dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-release
-          path: dist/
+          twine upload \
+            --repository-url https://test.pypi.org/legacy/ \
+            dist/*
