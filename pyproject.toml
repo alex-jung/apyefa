@@ -7,7 +7,7 @@ authors = [
   {name = "Alex Jung", email = "jungdevelop@gmail.com"}
 ]
 readme = "README.md"
-license = {file = "LICENSE"}
+license-files = ["LICENSE"]
 keywords = ["efa", "public transport", "traffic"]
 
 dependencies = [
