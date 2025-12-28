@@ -485,6 +485,10 @@ class Line(_Base):
             coords,
         )
 
+    def __hash__(self):
+        """Returns hash value of the line."""
+        return hash(self.id)
+
 
 @dataclass(frozen=True)
 class Leg(_Base):
