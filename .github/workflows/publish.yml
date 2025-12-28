@@ -3,12 +3,11 @@ name: Build and publish to PyPI
 on: 
   push:
     tags:
-       - "v*.dev"
+       - "v*"
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: testpypi
 
     steps:
       - uses: actions/checkout@v6
@@ -37,11 +36,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install twine
 
-      - name: Publish to TestPyPI
+      - name: Decide publish target
+        id: target
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == *dev* ]]; then
+            echo "url=https://test.pypi.org/legacy/" >> $GITHUB_OUTPUT
+            echo "token=TEST_PYPI_API_TOKEN" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://upload.pypi.org/legacy/" >> $GITHUB_OUTPUT
+            echo "token=PYPI_API_TOKEN" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to (Test) PyPI
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          TWINE_PASSWORD: ${{ secrets[steps.target.outputs.token] }}
         run: |
           twine upload \
-            --repository-url https://test.pypi.org/legacy/ \
+            --repository-url ${{ steps.target.outputs.url }} \
             dist/*
