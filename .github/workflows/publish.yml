@@ -33,9 +33,6 @@ jobs:
 
       - name: List directory
         run: |
-          docker run --rm \
-            -v $PWD/app \
-            apyefa:release \
             ls -la
       
       - name: Upload dist
