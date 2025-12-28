@@ -1,9 +1,14 @@
 name: Build and publish to PyPI
 
-on: 
+# just for tests
+on:
   push:
-    tags:
-       - "v*"
+    branches: ["**"]
+
+# on: 
+#   push:
+#     tags:
+#        - "v*"
 
 jobs:
   publish:
@@ -22,9 +27,16 @@ jobs:
       - name: Build package
         run: |
           docker run --rm \
-            -v $PWD/dist:/app/dist \
+            -v $PWD/app \
             apyefa:release \
             uv run python -m build
+
+      - name: Get tags
+        run: |
+          docker run --rm \
+            -v $PWD/app \
+            apyefa:release \
+            git describe --tags
       
       - name: Upload dist
         uses: actions/upload-artifact@v4
