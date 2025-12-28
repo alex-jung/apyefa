@@ -4,6 +4,7 @@ FROM python:${PYTHON_VERSION}-slim
 
 WORKDIR /app
 
+COPY . .
 
 RUN apt-get update && apt-get install -y git \
     && rm -rf /var/lib/apt/lists/*
@@ -13,7 +14,5 @@ RUN pip install --no-cache-dir uv
 COPY pyproject.toml uv.lock ./
 
 RUN uv sync --frozen --all-groups
-
-COPY . .
 
 CMD ["uv", "run", "pytest"]

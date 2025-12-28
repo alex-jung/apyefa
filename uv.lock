@@ -132,13 +132,14 @@ source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
     { name = "black" },
-    { name = "build" },
     { name = "tzdata" },
     { name = "voluptuous" },
 ]
 
 [package.dev-dependencies]
 build = [
+    { name = "build" },
+    { name = "setuptools" },
     { name = "setuptools-scm" },
 ]
 dev = [
@@ -156,13 +157,16 @@ dev = [
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.11.2" },
     { name = "black", specifier = ">=25.12.0" },
-    { name = "build", specifier = ">=1.3.0" },
     { name = "tzdata", specifier = ">=2024.2" },
     { name = "voluptuous", specifier = ">=0.15.2" },
 ]
 
 [package.metadata.requires-dev]
-build = [{ name = "setuptools-scm", specifier = "==9.2.2" }]
+build = [
+    { name = "build" },
+    { name = "setuptools" },
+    { name = "setuptools-scm", specifier = "==9.2.2" },
+]
 dev = [
     { name = "black", specifier = ">=25.12.0" },
     { name = "coverage", specifier = ">=5.0.3" },
