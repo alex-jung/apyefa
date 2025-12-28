@@ -1,0 +1,57 @@
+name: Build and publish to PyPI
+
+on: 
+  push:
+    tags:
+       - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t apyefa:release -f .devcontainer/Dockerfile .
+
+      - name: Build package
+        run: |
+          docker run --rm \
+            -v $PWD/dist:/app/dist \
+            apyefa:release \
+            uv run python -m build
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install twine tool
+        run: |
+          python -m pip install --upgrade pip
+          pip install twine
+
+      - name: Decide publish target
+        id: target
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == *dev* ]]; then
+            echo "url=https://test.pypi.org/legacy/" >> $GITHUB_OUTPUT
+            echo "token=TEST_PYPI_API_TOKEN" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://upload.pypi.org/legacy/" >> $GITHUB_OUTPUT
+            echo "token=PYPI_API_TOKEN" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to (Test) PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets[steps.target.outputs.token] }}
+        run: |
+          twine upload \
+            --repository-url ${{ steps.target.outputs.url }} \
+            dist/*

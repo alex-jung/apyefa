@@ -1,0 +1,20 @@
+{
+    "name": "Python + uv",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": ["ms-python.python", "ms-python.vscode-pylance", "charliermarsh.ruff", "ms-azuretools.vscode-docker"],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.analysis.typeCheckingMode": "basic"
+            }
+        }
+    },
+
+    "postCreateCommand": "uv sync --all-groups",
+    "remoteUser": "root"
+}

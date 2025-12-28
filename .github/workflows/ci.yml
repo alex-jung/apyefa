@@ -1,0 +1,42 @@
+name: Lint, check format and tests
+
+on:
+  push:
+    branches: ["**"]
+    tags-ignore: ["v*"]
+  pull_request:
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Display Python version
+      run: python -c "import sys; print(sys.version)"
+
+    - name: Build Docker image
+      run: |
+        docker build \
+          --build-arg PYTHON_VERSION=${{ matrix.python-version }} \
+          -t apyefa:${{ matrix.python-version }} -f .devcontainer/Dockerfile .
+
+    - name: Lint code
+      run: docker run --rm apyefa:${{ matrix.python-version }} uv run ruff check .
+
+    - name: Check code formatting
+      run: docker run --rm apyefa:${{ matrix.python-version }} uv run black --check .
+
+    - name: Run tests
+      run: |
+        docker run --rm apyefa:${{ matrix.python-version }} uv run pytest .

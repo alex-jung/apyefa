@@ -1,37 +1,45 @@
-[build-system]
-requires = [
-    "wheel",
-    "setuptools-scm[toml]>=8.0",
-]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "apyefa"
-version = "1.1.3"
+dynamic = ["version"]
 requires-python = ">= 3.11"
 description = "Python API for EFA(Elektronische Fahrplanauskunft) async requests"
 authors = [
   {name = "Alex Jung", email = "jungdevelop@gmail.com"}
 ]
 readme = "README.md"
-license = {file = "LICENSE"}
+license-files = ["LICENSE"]
 keywords = ["efa", "public transport", "traffic"]
 
 dependencies = [
     "aiohttp>=3.11.2",
     "voluptuous>=0.15.2",
-    "tzdata>=2024.2"
+    "tzdata>=2024.2",
+    "black>=25.12.0",
+    "twine>=6.2.0",
 ]
 
-[project.optional-dependencies]
-tests = [
+[dependency-groups]
+dev = [
   'coverage>=5.0.3',
   'pytest-cov',
   'pytest',
   'pytest-asyncio>=0.24.0',
   'pytest-benchmark[histogram]>=3.2.1',
-  'requests>=2.32.3'
+  'requests>=2.32.3',
+  'ruff>=0.14.10',
+  'black>=25.12.0'
 ]
+build = [
+  'setuptools-scm==9.2.2',
+  'build',
+  'setuptools'
+]
+
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -41,6 +49,30 @@ asyncio_default_fixture_loop_scope = "function"
 testpaths = [
     "tests"
 ]
+
+[tool.coverage.run]
+source = ["apyefa"]
+omit = [
+    "tests/*",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.ruff_cache
+  | \.venv
+  | build
+  | dist
+)/
+'''
 
 [tool.coverage.report]
 exclude_also = [
