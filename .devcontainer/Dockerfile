@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir uv
 
 COPY pyproject.toml uv.lock ./
 
-RUN uv sync --frozen --dev
+RUN uv sync --frozen --all-groups
 
 COPY . .
 
