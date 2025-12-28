@@ -11,8 +11,6 @@ RUN apt-get update && apt-get install -y git \
 
 RUN pip install --no-cache-dir uv
 
-COPY pyproject.toml uv.lock ./
-
 RUN uv sync --frozen --all-groups
 
 CMD ["uv", "run", "pytest"]
