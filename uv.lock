@@ -142,7 +142,6 @@ build = [
     { name = "build" },
     { name = "setuptools" },
     { name = "setuptools-scm" },
-    { name = "twine" },
 ]
 dev = [
     { name = "black" },
@@ -169,7 +168,6 @@ build = [
     { name = "build" },
     { name = "setuptools" },
     { name = "setuptools-scm", specifier = "==9.2.2" },
-    { name = "twine", specifier = "==6.2.0" },
 ]
 dev = [
     { name = "black", specifier = ">=25.12.0" },
