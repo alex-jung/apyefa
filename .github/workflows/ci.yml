@@ -1,12 +1,11 @@
-name: Lint and Test
+name: Lint, check format and tests
 
 on:
-  - push
-  - pull_request
+  push:
+    branches: ["**"]
+    tags-ignore: ["v*"]
+  pull_request:
 
-permissions:
-  checks: write
-  pull-requests: write
 
 jobs:
   build:
@@ -32,13 +31,12 @@ jobs:
           --build-arg PYTHON_VERSION=${{ matrix.python-version }} \
           -t apyefa:${{ matrix.python-version }} -f .devcontainer/Dockerfile .
 
-    - name: Lint code with Ruff
+    - name: Lint code
       run: docker run --rm apyefa:${{ matrix.python-version }} uv run ruff check .
 
-    - name: Check code formatting with Ruff
-      run: docker run --rm apyefa:${{ matrix.python-version }} uv run ruff format --diff .
-      continue-on-error: true
+    - name: Check code formatting
+      run: docker run --rm apyefa:${{ matrix.python-version }} uv run black --check .
 
-    - name: Test with pytest
+    - name: Run tests
       run: |
         docker run --rm apyefa:${{ matrix.python-version }} uv run pytest .

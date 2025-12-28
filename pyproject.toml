@@ -20,7 +20,8 @@ keywords = ["efa", "public transport", "traffic"]
 dependencies = [
     "aiohttp>=3.11.2",
     "voluptuous>=0.15.2",
-    "tzdata>=2024.2"
+    "tzdata>=2024.2",
+    "black>=25.12.0",
 ]
 
 [dependency-groups]
@@ -31,7 +32,8 @@ dev = [
   'pytest-asyncio>=0.24.0',
   'pytest-benchmark[histogram]>=3.2.1',
   'requests>=2.32.3',
-  'ruff>=0.14.10'
+  'ruff>=0.14.10',
+  'black>=25.12.0'
 ]
 
 [tool.pytest.ini_options]
@@ -48,6 +50,24 @@ source = ["apyefa"]
 omit = [
     "tests/*",
 ]
+
+[tool.ruff]
+line-length = 88
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.ruff_cache
+  | \.venv
+  | build
+  | dist
+)/
+'''
 
 [tool.coverage.report]
 exclude_also = [
