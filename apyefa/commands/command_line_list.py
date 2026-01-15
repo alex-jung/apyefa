@@ -12,10 +12,10 @@ class CommandLineList(Command):
     def __init__(self, format: str) -> None:
         super().__init__("XML_LINELIST_REQUEST", format)
 
-    def parse(self, data: dict):
-        data = self._get_parser().parse(data)
+    def parse(self, data: str):
+        data_parsed = self._get_parser().parse(data)
 
-        lines = data.get("transportations", [])
+        lines = data_parsed.get("transportations", [])
 
         _LOGGER.info(f"{len(lines)} line(s) found")
 

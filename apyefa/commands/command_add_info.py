@@ -13,8 +13,8 @@ class CommandAdditionalInfo(Command):
     def __init__(self, format: str) -> None:
         super().__init__("XML_ADDINFO_REQUEST", format)
 
-    def parse(self, data: dict):
-        data = self._get_parser().parse(data)
+    def parse(self, data: str):
+        data_parsed = self._get_parser().parse(data)
 
         result = []
 

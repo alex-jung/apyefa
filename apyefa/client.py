@@ -65,11 +65,11 @@ class EfaClient:
         self._format: str = format
         self._base_url: str = url if url.endswith("/") else f"{url}/"
 
-    async def info(self) -> SystemInfo:
+    async def info(self) -> SystemInfo | None:
         """Get EFA endpoint system info.
 
         Returns:
-            SystemInfo: info object
+            (SystemInfo | None): info object or None if no data provided by API
         """
         _LOGGER.info("Request system info")
 
@@ -115,14 +115,14 @@ class EfaClient:
 
         command = CommandStopFinder(self._format)
 
-        command.add_param("locationServerActive", 1)
+        command.add_param("locationServerActive", "1")
         command.add_param("type_sf", "any")
         command.add_param("name_sf", name)
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
         command.add_param("doNotSearchForStops_sf", not search_nearbly_stops)
 
         if filters:
-            command.add_param("anyObjFilter_sf", sum(filters))
+            command.add_param("anyObjFilter_sf", str(sum(filters)))
 
         command.validate_params()
 
@@ -160,7 +160,7 @@ class EfaClient:
         _LOGGER.debug(f"search_nearbly_stops: {search_nearbly_stops}")
 
         command = CommandStopFinder(self._format)
-        command.add_param("locationServerActive", 1)
+        command.add_param("locationServerActive", "1")
         command.add_param("type_sf", "coord")
         command.add_param("name_sf", f"{coord_x}:{coord_y}:{format}")
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
@@ -222,7 +222,7 @@ class EfaClient:
         if not merge_directions:
             command.add_param("mergeDir", merge_directions)
         if req_types:
-            command.add_param("lineReqType", sum(req_types))
+            command.add_param("lineReqType", str(sum(req_types)))
 
         command.validate_params()
 
@@ -390,7 +390,7 @@ class EfaClient:
         command = CommandDepartures(self._format)
 
         # add parameters
-        command.add_param("locationServerActive", 1)
+        command.add_param("locationServerActive", "1")
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
         command.add_param("name_dm", location)
         command.add_param("type_dm", "any")
@@ -443,7 +443,7 @@ class EfaClient:
         command = CommandServingLines(self._format)
         command.add_param("mode", "line")
         command.add_param("lineName", line)
-        command.add_param("locationServerActive", 1)
+        command.add_param("locationServerActive", "1")
         command.add_param("mergeDir", merge_directions)
         command.add_param("lsShowTrainsExplicit", show_trains_explicit)
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
@@ -495,7 +495,7 @@ class EfaClient:
 
         command = CommandServingLines(self._format)
         command.add_param("mode", "odv")
-        command.add_param("locationServerActive", 1)
+        command.add_param("locationServerActive", "1")
         command.add_param("type_sl", "stopID")
         command.add_param("name_sl", location)
         command.add_param("mergeDir", merge_directions)
@@ -504,7 +504,7 @@ class EfaClient:
         command.add_param("withoutTrains", without_trains)
 
         if req_types:
-            command.add_param("lineReqType", sum(req_types))
+            command.add_param("lineReqType", str(sum(req_types)))
 
         command.validate_params()
 
@@ -578,7 +578,7 @@ class EfaClient:
             f"{right_lower[0]}:{right_lower[1]}:{CoordFormat.WGS84.value}",
         )
         command.add_param("inclFilter", True)
-        command.add_param("max", limit)
+        command.add_param("max", str(limit))
 
         for index, f in enumerate(filters):
             command.add_param(f"type_{index + 1}", f.value)
@@ -623,11 +623,11 @@ class EfaClient:
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
         command.add_param("inclFilter", True)
         command.add_param("coord", f"{coord[0]}:{coord[1]}:{CoordFormat.WGS84.value}")
-        command.add_param("max", limit)
+        command.add_param("max", str(limit))
 
         for index, f in enumerate(filters):
             command.add_param(f"type_{index + 1}", f.value)
-            command.add_param(f"radius_{index + 1}", radius[index])
+            command.add_param(f"radius_{index + 1}", str(radius[index]))
 
         command.validate_params()
 
@@ -695,7 +695,7 @@ class EfaClient:
         _LOGGER.info(f"Run query {query}")
 
         async with self._client_session.get(
-            query, ssl=False, timeout=QUERY_TIMEOUT
+            query, ssl=False, timeout=aiohttp.ClientTimeout(QUERY_TIMEOUT)
         ) as response:
             _LOGGER.debug(f"Response status: {response.status}")
 
@@ -712,5 +712,4 @@ class EfaClient:
                 )
 
     def _build_url(self, cmd: Command):
-        print(self._base_url + str(cmd))
         return self._base_url + str(cmd)

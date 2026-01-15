@@ -44,20 +44,20 @@ class Command:
         _LOGGER.debug("Updated parameters:")
         _LOGGER.debug(self._parameters)
 
-    def add_param_datetime(self, arg_date: str | datetime | date):
+    def add_param_datetime(self, arg_date: str | datetime | date | None):
         """
         Adds date and/or time parameters to the command based on the provided argument.
 
         Parameters:
-        arg_date (str | datetime | date): The date and/or time to be added. It can be a string, datetime object, or date object.
+            arg_date (str | datetime | date | None): The date and/or time to be added. It can be a string, datetime object, or date object.
 
         Raises:
-        ValueError: If the provided date(time) is in an invalid format.
+            ValueError: If the provided date(time) has invalid format.
 
         Notes:
-        - If arg_date is a datetime object, both date and time parameters are added.
-        - If arg_date is a date object, only the date parameter is added.
-        - If arg_date is a string, it will be checked if it is a valid datetime, date, or time string.
+            - If arg_date is a datetime object, both date and time parameters are added.
+            - If arg_date is a date object, only the date parameter is added.
+            - If arg_date is a string, it will be checked if it is a valid datetime, date, or time string.
         """
         if not arg_date:
             return

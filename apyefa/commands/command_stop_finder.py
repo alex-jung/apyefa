@@ -12,10 +12,10 @@ class CommandStopFinder(Command):
     def __init__(self, format: str) -> None:
         super().__init__("XML_STOPFINDER_REQUEST", format)
 
-    def parse(self, data: dict) -> list[Location]:
-        data = self._get_parser().parse(data)
+    def parse(self, data: str) -> list[Location]:
+        data_parsed = self._get_parser().parse(data)
 
-        locations = data.get("locations", [])
+        locations = data_parsed.get("locations", [])
 
         _LOGGER.info(f"{len(locations)} location(s) found")
 
@@ -39,7 +39,7 @@ class CommandStopFinder(Command):
                 Optional("anyMaxSizeHitList"): int,
                 Optional("anySigWhenPerfectNoOtherMatches"): Any("0", "1", 0, 1),
                 Optional("anyResSort_sf"): str,
-                Optional("anyObjFilter_sf"): int,
+                Optional("anyObjFilter_sf"): Any(str, int),
                 Optional("doNotSearchForStops_sf"): Any("0", "1", 0, 1),
                 Optional("locationInfoActive_sf"): Any("0", "1", 0, 1),
                 Optional("useHouseNumberList_sf"): Any("0", "1", 0, 1),
