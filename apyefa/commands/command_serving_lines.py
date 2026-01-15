@@ -12,10 +12,10 @@ class CommandServingLines(Command):
     def __init__(self, format: str) -> None:
         super().__init__("XML_SERVINGLINES_REQUEST", format)
 
-    def parse(self, data: dict) -> list[Line]:
-        data = self._get_parser().parse(data)
+    def parse(self, data: str) -> list[Line]:
+        data_parsed = self._get_parser().parse(data)
 
-        lines = data.get("lines", [])
+        lines = data_parsed.get("lines", [])
 
         _LOGGER.info(f"{len(lines)} line(s) found")
 

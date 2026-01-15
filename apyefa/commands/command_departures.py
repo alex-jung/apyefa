@@ -12,10 +12,10 @@ class CommandDepartures(Command):
     def __init__(self, format: str) -> None:
         super().__init__("XML_DM_REQUEST", format)
 
-    def parse(self, data: dict):
-        data = self._get_parser().parse(data)
+    def parse(self, data: str):
+        data_parsed = self._get_parser().parse(data)
 
-        departures = data.get("stopEvents", [])
+        departures = data_parsed.get("stopEvents", [])
 
         _LOGGER.info(f"{len(departures)} departure(s) found")
 

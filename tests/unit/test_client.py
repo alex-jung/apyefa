@@ -2,9 +2,16 @@ from typing import Final
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from aiohttp import ClientTimeout
 
 from apyefa.client import QUERY_TIMEOUT, EfaClient
-from apyefa.data_classes import CoordFormat, Location, LocationFilter, LocationType
+from apyefa.data_classes import (
+    CoordFormat,
+    LineRequestType,
+    Location,
+    LocationFilter,
+    LocationType,
+)
 from apyefa.exceptions import EfaConnectionError, EfaFormatNotSupported
 
 API_TEST_URL: Final = "https://test_api.com/"
@@ -61,7 +68,7 @@ class TestFunctionLocationsByName:
                 await test_async_client.locations_by_name(name)
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
-        mock_add_param.assert_any_call("locationServerActive", 1)
+        mock_add_param.assert_any_call("locationServerActive", "1")
         mock_add_param.assert_any_call("type_sf", "any")
         mock_add_param.assert_any_call("name_sf", name)
         mock_add_param.assert_any_call("coordOutputFormat", CoordFormat.WGS84.value)
@@ -121,7 +128,7 @@ class TestFunctionLocationsByName:
             ):
                 await test_async_client.locations_by_name("any name", filters=filters)
 
-                mock_add_param.assert_called_with("anyObjFilter_sf", sum(filters))
+                mock_add_param.assert_called_with("anyObjFilter_sf", str(sum(filters)))
 
 
 class TestFunctionLocationsByCoord:
@@ -138,7 +145,7 @@ class TestFunctionLocationsByCoord:
                 await test_async_client.locations_by_coord(x, y)
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
-        mock_add_param.assert_any_call("locationServerActive", 1)
+        mock_add_param.assert_any_call("locationServerActive", "1")
         mock_add_param.assert_any_call("type_sf", "coord")
         mock_add_param.assert_any_call("name_sf", f"{x}:{y}:{CoordFormat.WGS84}")
         mock_add_param.assert_any_call("coordOutputFormat", CoordFormat.WGS84.value)
@@ -201,7 +208,9 @@ class TestFunctionRunQuery:
 
         await test_async_client._run_query("test_url")
 
-        mock_get.assert_called_with("test_url", ssl=False, timeout=QUERY_TIMEOUT)
+        mock_get.assert_called_with(
+            "test_url", ssl=False, timeout=ClientTimeout(QUERY_TIMEOUT)
+        )
 
     @patch("aiohttp.ClientSession.get")
     async def test_failed_status_400(self, mock_get, test_async_client: EfaClient):
@@ -211,7 +220,9 @@ class TestFunctionRunQuery:
         with pytest.raises(EfaConnectionError):
             await test_async_client._run_query("test_url")
 
-        mock_get.assert_called_with("test_url", ssl=False, timeout=QUERY_TIMEOUT)
+        mock_get.assert_called_with(
+            "test_url", ssl=False, timeout=ClientTimeout(QUERY_TIMEOUT)
+        )
 
     @pytest.mark.skip(reason="no way of currently testing this")
     @patch("aiohttp.ClientSession.get")
@@ -238,7 +249,7 @@ class TestFunctionLinesByName:
         mock_add_param.assert_any_call("coordOutputFormat", CoordFormat.WGS84.value)
         mock_add_param.assert_any_call("mode", "line")
         mock_add_param.assert_any_call("lineName", "any name")
-        mock_add_param.assert_any_call("locationServerActive", 1)
+        mock_add_param.assert_any_call("locationServerActive", "1")
 
     async def test_no_name(self, test_async_client: EfaClient):
         with pytest.raises(ValueError):
@@ -284,7 +295,7 @@ class TestFunctionLinesByLocation:
         mock_add_param.assert_any_call("mode", "odv")
         mock_add_param.assert_any_call("type_sl", "stopID")
         mock_add_param.assert_any_call("name_sl", "any location")
-        mock_add_param.assert_any_call("locationServerActive", 1)
+        mock_add_param.assert_any_call("locationServerActive", "1")
 
     @patch.object(EfaClient, "_run_query", return_value="")
     async def test_location(self, _, test_async_client: EfaClient):
@@ -327,9 +338,27 @@ class TestFunctionLinesByLocation:
         with patch(
             "apyefa.commands.command_serving_lines.CommandServingLines.add_param"
         ) as mock_add_param:
-            await test_async_client.lines_by_location("any name", req_types=[1, 2, 3])
+            await test_async_client.lines_by_location(
+                "any name",
+                req_types=[
+                    LineRequestType.DEPARTURE_MONITOR,
+                    LineRequestType.ROUTE_MAPS,
+                    LineRequestType.TIMETABLE,
+                ],
+            )
 
-        mock_add_param.assert_any_call("lineReqType", sum([1, 2, 3]))
+        mock_add_param.assert_any_call(
+            "lineReqType",
+            str(
+                sum(
+                    [
+                        LineRequestType.DEPARTURE_MONITOR,
+                        LineRequestType.ROUTE_MAPS,
+                        LineRequestType.TIMETABLE,
+                    ]
+                )
+            ),
+        )
 
     @pytest.mark.parametrize("merge_dirs", [True, False])
     @patch.object(EfaClient, "_run_query", return_value="")
@@ -373,7 +402,7 @@ class TestFunctionDeparturesByLocation:
 
         mock_add_param.assert_any_call("outputFormat", "rapidJSON")
         mock_add_param.assert_any_call("coordOutputFormat", CoordFormat.WGS84.value)
-        mock_add_param.assert_any_call("locationServerActive", 1)
+        mock_add_param.assert_any_call("locationServerActive", "1")
         mock_add_param.assert_any_call("name_dm", location)
         mock_add_param.assert_any_call("mode", "direct")
         mock_add_param.assert_any_call("useAllStops", "1")
@@ -505,9 +534,26 @@ class TestFunctionListLines:
         with patch(
             "apyefa.commands.command_line_list.CommandLineList.add_param"
         ) as mock_add_param:
-            await test_async_client.list_lines(req_types=[1, 2, 3])
+            await test_async_client.list_lines(
+                req_types=[
+                    LineRequestType.DEPARTURE_MONITOR,
+                    LineRequestType.ROUTE_MAPS,
+                    LineRequestType.TIMETABLE,
+                ]
+            )
 
-        mock_add_param.assert_any_call("lineReqType", sum([1, 2, 3]))
+        mock_add_param.assert_any_call(
+            "lineReqType",
+            str(
+                sum(
+                    [
+                        LineRequestType.DEPARTURE_MONITOR,
+                        LineRequestType.ROUTE_MAPS,
+                        LineRequestType.TIMETABLE,
+                    ]
+                )
+            ),
+        )
 
 
 class TestFunctionListStops:

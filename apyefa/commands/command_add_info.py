@@ -1,24 +1,19 @@
-import logging
-
 from voluptuous import Any, Optional, Required, Schema
 
 from apyefa.commands.command import Command
-
-from ..data_classes import CoordFormat
-
-_LOGGER = logging.getLogger(__name__)
+from apyefa.data_classes import CoordFormat
 
 
 class CommandAdditionalInfo(Command):
     def __init__(self, format: str) -> None:
         super().__init__("XML_ADDINFO_REQUEST", format)
 
-    def parse(self, data: dict):
-        data = self._get_parser().parse(data)
+    def parse(self, data: str):
+        # data_parsed = self._get_parser().parse(data)
 
-        result = []
+        # result = []
 
-        return result
+        return []
 
     def _get_params_schema(self) -> Schema:
         return Schema(

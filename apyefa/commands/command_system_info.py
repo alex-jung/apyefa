@@ -12,12 +12,12 @@ class CommandSystemInfo(Command):
     def __init__(self, format: str) -> None:
         super().__init__("XML_SYSTEMINFO_REQUEST", format)
 
-    def parse(self, data: dict) -> SystemInfo:
+    def parse(self, data: str) -> SystemInfo | None:
         _LOGGER.info("Parsing system info response")
 
-        data = self._get_parser().parse(data)
+        data_parsed = self._get_parser().parse(data)
 
-        return SystemInfo.from_dict(data)
+        return SystemInfo.from_dict(data_parsed)
 
     def _get_params_schema(self) -> Schema:
         return Schema(

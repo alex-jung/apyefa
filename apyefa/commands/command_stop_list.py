@@ -12,10 +12,10 @@ class CommandStopList(Command):
     def __init__(self, format: str) -> None:
         super().__init__("XML_STOPLIST_REQUEST", format)
 
-    def parse(self, data: dict):
-        data = self._get_parser().parse(data)
+    def parse(self, data: str):
+        data_parsed = self._get_parser().parse(data)
 
-        locations = data.get("locations", [])
+        locations = data_parsed.get("locations", [])
 
         _LOGGER.info(f"{len(locations)} location(s) found")
 

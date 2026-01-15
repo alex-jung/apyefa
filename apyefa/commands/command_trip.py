@@ -12,10 +12,10 @@ class CommandTrip(Command):
     def __init__(self, format: str) -> None:
         super().__init__("XML_TRIP_REQUEST2", format)
 
-    def parse(self, data: dict):
-        data = self._get_parser().parse(data)
+    def parse(self, data: str):
+        data_parsed = self._get_parser().parse(data)
 
-        journeys = data.get("journeys", [])
+        journeys = data_parsed.get("journeys", [])
 
         _LOGGER.info(f"{len(journeys)} journey(s) found")
 
