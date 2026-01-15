@@ -700,7 +700,7 @@ class EfaClient:
             _LOGGER.debug(f"Response status: {response.status}")
 
             if response.status == 200:
-                text = await response.text()
+                text = await response.text(encoding="utf-8")
 
                 if self._debug:
                     _LOGGER.debug(text)
