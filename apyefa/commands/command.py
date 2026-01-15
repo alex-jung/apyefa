@@ -1,6 +1,7 @@
 import logging
 from abc import abstractmethod
 from datetime import date, datetime
+from typing import Any
 
 from voluptuous import MultipleInvalid, Schema
 
@@ -110,12 +111,15 @@ class Command:
         return "?" + "&".join([f"{k}={str(v)}" for k, v in self._parameters.items()])
 
     @abstractmethod
-    def parse(self, data: str):
+    def parse(self, data: str) -> list[Any]:
         """
         Parses the given data.
 
         Args:
             data (str): The data to be parsed.
+
+        Returns:
+            list[Any]: Parsed data as list.
 
         Raises:
             NotImplementedError: If the method is not implemented by a subclass.
