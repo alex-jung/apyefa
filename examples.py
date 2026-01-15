@@ -11,7 +11,7 @@ async def main():
             client.locations_by_name("Nürnberg Plärrer"),
             client.locations_by_name("Nordostbahnhof", filters=[LocationFilter.STOPS]),
             client.departures_by_location(
-                "de:09564:704", limit=10, date="20241126 16:30"
+                "de:09564:704", limit=10, arg_date="20241126 16:30"
             ),
         )
 
