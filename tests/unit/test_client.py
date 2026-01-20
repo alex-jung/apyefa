@@ -33,7 +33,7 @@ class TestInit:
 
     async def test_no_url(self):
         with pytest.raises(ValueError):
-            async with EfaClient(None):
+            async with EfaClient(None):  # type: ignore
                 ...
 
     async def test_invalid_format(self):
@@ -76,7 +76,7 @@ class TestFunctionLocationsByName:
 
     async def test_no_name(self, test_async_client: EfaClient):
         with pytest.raises(ValueError):
-            await test_async_client.locations_by_name(None)
+            await test_async_client.locations_by_name(None)  # type: ignore
 
     @pytest.mark.parametrize("limit", [0, 1, 10])
     @patch.object(EfaClient, "_run_query", return_value="")
@@ -128,7 +128,7 @@ class TestFunctionLocationsByName:
             ):
                 await test_async_client.locations_by_name("any name", filters=filters)
 
-                mock_add_param.assert_called_with("anyObjFilter_sf", str(sum(filters)))
+                mock_add_param.assert_called_with("anyObjFilter_sf", sum(filters))
 
 
 class TestFunctionLocationsByCoord:
@@ -253,7 +253,7 @@ class TestFunctionLinesByName:
 
     async def test_no_name(self, test_async_client: EfaClient):
         with pytest.raises(ValueError):
-            await test_async_client.lines_by_name(None)
+            await test_async_client.lines_by_name(None)  # type: ignore
 
     @pytest.mark.parametrize("merge_dirs", [True, False])
     @patch.object(EfaClient, "_run_query", return_value="")
@@ -313,7 +313,7 @@ class TestFunctionLinesByLocation:
 
     async def test_no_location(self, test_async_client: EfaClient):
         with pytest.raises(ValueError):
-            await test_async_client.lines_by_location(None)
+            await test_async_client.lines_by_location(None)  # type: ignore
 
     @pytest.mark.parametrize(
         "loc_type",
@@ -349,14 +349,12 @@ class TestFunctionLinesByLocation:
 
         mock_add_param.assert_any_call(
             "lineReqType",
-            str(
-                sum(
-                    [
-                        LineRequestType.DEPARTURE_MONITOR,
-                        LineRequestType.ROUTE_MAPS,
-                        LineRequestType.TIMETABLE,
-                    ]
-                )
+            sum(
+                [
+                    LineRequestType.DEPARTURE_MONITOR,
+                    LineRequestType.ROUTE_MAPS,
+                    LineRequestType.TIMETABLE,
+                ]
             ),
         )
 
@@ -412,7 +410,7 @@ class TestFunctionDeparturesByLocation:
 
     async def test_no_location(self, test_async_client: EfaClient):
         with pytest.raises(ValueError):
-            await test_async_client.departures_by_location(None)
+            await test_async_client.departures_by_location(None)  # type: ignore
 
     @patch.object(EfaClient, "_run_query", return_value="")
     async def test_location_object(self, _, test_async_client: EfaClient):
@@ -465,7 +463,7 @@ class TestFunctionLineStops:
 
     async def test_no_line_name(self, test_async_client: EfaClient):
         with pytest.raises(ValueError):
-            await test_async_client.line_stops(None)
+            await test_async_client.line_stops(None)  # type: ignore
 
     @pytest.mark.parametrize("add_info", [True, False])
     @patch.object(EfaClient, "_run_query", return_value="")
@@ -477,8 +475,6 @@ class TestFunctionLineStops:
                 "apyefa.commands.command_line_stop.CommandLineStop.parse"
             ) as mock_parse:
                 mock_parse.return_value = ""
-
-                test_async_client._format = format
 
                 await test_async_client.line_stops("my_line", additional_info=add_info)
 
@@ -544,14 +540,12 @@ class TestFunctionListLines:
 
         mock_add_param.assert_any_call(
             "lineReqType",
-            str(
-                sum(
-                    [
-                        LineRequestType.DEPARTURE_MONITOR,
-                        LineRequestType.ROUTE_MAPS,
-                        LineRequestType.TIMETABLE,
-                    ]
-                )
+            sum(
+                [
+                    LineRequestType.DEPARTURE_MONITOR,
+                    LineRequestType.ROUTE_MAPS,
+                    LineRequestType.TIMETABLE,
+                ]
             ),
         )
 
