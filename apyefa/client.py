@@ -503,9 +503,6 @@ class EfaClient:
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
         command.add_param("withoutTrains", without_trains)
 
-        print("debug")
-        print(str(sum(req_types)))
-
         if req_types:
             command.add_param("lineReqType", sum(req_types))
 
