@@ -15,18 +15,18 @@ _LOGGER = logging.getLogger(__name__)
 class Command:
     def __init__(self, name: str, format: str) -> None:
         self._name: str = name
-        self._parameters: dict[str, str] = {}
+        self._parameters: dict[str, str | bool | int | None] = {}
         self._format = format
 
         self.add_param("outputFormat", format)
 
-    def add_param(self, param: str, value: str | bool):
+    def add_param(self, param: str, value: str | bool | int | None):
         """
         Adds a parameter and its value to the command's parameters.
 
         Args:
             param (str): The name of the parameter to add.
-            value (str | bool): The value of the parameter. If the value is a boolean,
+            value (str | bool | int | None): The value of the parameter. If the value is a boolean,
                                 it will be converted to "1" for True and "0" for False.
 
         Raises:

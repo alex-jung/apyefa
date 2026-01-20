@@ -122,7 +122,7 @@ class EfaClient:
         command.add_param("doNotSearchForStops_sf", not search_nearbly_stops)
 
         if filters:
-            command.add_param("anyObjFilter_sf", str(sum(filters)))
+            command.add_param("anyObjFilter_sf", sum(filters))
 
         command.validate_params()
 
@@ -222,7 +222,7 @@ class EfaClient:
         if not merge_directions:
             command.add_param("mergeDir", merge_directions)
         if req_types:
-            command.add_param("lineReqType", str(sum(req_types)))
+            command.add_param("lineReqType", sum(req_types))
 
         command.validate_params()
 
@@ -503,8 +503,11 @@ class EfaClient:
         command.add_param("coordOutputFormat", CoordFormat.WGS84.value)
         command.add_param("withoutTrains", without_trains)
 
+        print("debug")
+        print(str(sum(req_types)))
+
         if req_types:
-            command.add_param("lineReqType", str(sum(req_types)))
+            command.add_param("lineReqType", sum(req_types))
 
         command.validate_params()
 
@@ -578,7 +581,7 @@ class EfaClient:
             f"{right_lower[0]}:{right_lower[1]}:{CoordFormat.WGS84.value}",
         )
         command.add_param("inclFilter", True)
-        command.add_param("max", str(limit))
+        command.add_param("max", limit)
 
         for index, f in enumerate(filters):
             command.add_param(f"type_{index + 1}", f.value)
@@ -627,7 +630,7 @@ class EfaClient:
 
         for index, f in enumerate(filters):
             command.add_param(f"type_{index + 1}", f.value)
-            command.add_param(f"radius_{index + 1}", str(radius[index]))
+            command.add_param(f"radius_{index + 1}", radius[index])
 
         command.validate_params()
 
