@@ -113,7 +113,7 @@ class TestTrip:
                     self.ORIGIN_ID,
                     self.DESTINATION_ID,
                     trip_departure=True,
-                    trip_datetime=trip_datetime
+                    trip_datetime=trip_datetime,
                 )
 
                 assert len(journeys) > 0
