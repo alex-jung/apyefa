@@ -27,18 +27,17 @@ jobs:
             - name: Display Python version
               run: python -c "import sys; print(sys.version)"
 
-            - name: Build Docker image
-              run: |
-                  docker build \
-                    --build-arg PYTHON_VERSION=${{ matrix.python-version }} \
-                    -t apyefa:${{ matrix.python-version }} -f .devcontainer/Dockerfile .
+            - name: Install uv
+              run: pip install uv
+
+            - name: Install dependencies
+              run: uv sync --frozen --all-groups
 
             - name: Lint code
-              run: docker run --rm apyefa:${{ matrix.python-version }} uv run ruff check .
+              run: uv run ruff check .
 
             - name: Check code formatting
-              run: docker run --rm apyefa:${{ matrix.python-version }} uv run black --check .
+              run: uv run black --check .
 
             - name: Run tests
-              run: |
-                  docker run --rm apyefa:${{ matrix.python-version }} uv run pytest .
+              run: uv run pytest .
