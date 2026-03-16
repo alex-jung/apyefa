@@ -52,5 +52,7 @@ class CommandTrip(Command):
                 Optional("calcOneDirection"): Any("0", "1", 0, 1),
                 Optional("changeSpeed"): str,
                 Optional("coordOutputDistance"): Any("0", "1", 0, 1),
+                Optional("itdDate"): str,
+                Optional("itdTime"): str,
             }
         )
