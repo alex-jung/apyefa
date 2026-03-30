@@ -31,7 +31,7 @@ dev = [
   'pipeguard-cli>=0.1.1'
 ]
 build = [
-  'setuptools-scm==9.2.2',
+  'setuptools-scm==10.0.5',
   'build',
   'setuptools'
 ]
